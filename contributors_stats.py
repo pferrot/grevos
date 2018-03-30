@@ -15,6 +15,7 @@ from requests import get
 
 parser = argparse.ArgumentParser(description='Collect contributors statistics on specified GitHub repositories.')
 parser.add_argument('-f', '--file', type=str, nargs=1, help='file containing the repos to process')
+parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='ignore commits with one of those files added')
 
 args = parser.parse_args()
 print
@@ -46,6 +47,13 @@ def get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_tok
     if status_code == 200:
         out = reply.content
         js = json.loads(out.decode('utf-8'))
+
+        if args.ignore_files and "files" in js:
+            for f in js["files"]:
+                if "filename" in f and f["filename"] in args.ignore_files and "status" in f and f["status"] == "added":
+                    print ("    Ignoring commit %s because file '%s' was added" % (commit_sha, f["filename"]))
+                    return {}
+
         #print (json.dumps(js, indent=4, sort_keys=True))
         commit_date = None
         if "commit" in js and "author" in js["commit"] and "date" in js["commit"]["author"]:
@@ -140,24 +148,27 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                     one_result["sha"] = commit_sha
                     commit_details = get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_token)
                     if commit_details:
-                        #print ("    Date: %s" % commit_details["date"])
-                        #print ("    Additions: %s" % commit_details["stats"]["additions"])
-                        #print ("    Deletions: %s" % commit_details["stats"]["deletions"])
-                        #print ("    Difference: %s" % commit_details["stats"]["difference"])
-                        #print ("    Total: %s" % commit_details["stats"]["total"])
+                        # Handle case where commit must be ignored.
+                        if len(commit_details.keys()) > 0:
 
-                        one_result["date"] = commit_details["date"]
-                        one_result["stats"] = commit_details["stats"]
-                        d = datetime.datetime.strptime(commit_details["date"], "%Y-%m-%dT%H:%M:%SZ")
+                            #print ("    Date: %s" % commit_details["date"])
+                            #print ("    Additions: %s" % commit_details["stats"]["additions"])
+                            #print ("    Deletions: %s" % commit_details["stats"]["deletions"])
+                            #print ("    Difference: %s" % commit_details["stats"]["difference"])
+                            #print ("    Total: %s" % commit_details["stats"]["total"])
 
-                        one_result['date_unix'] = unix_time_millis(d)
-                        one_result['date_formatted'] = d.strftime('%d.%m.%Y %H:%M:%S')
-                        if author_login in result:
-                            result[author_login].append(one_result)
-                        else:
-                            a = []
-                            a.append(one_result)
-                            result[author_login] = a
+                            one_result["date"] = commit_details["date"]
+                            one_result["stats"] = commit_details["stats"]
+                            d = datetime.datetime.strptime(commit_details["date"], "%Y-%m-%dT%H:%M:%SZ")
+
+                            one_result['date_unix'] = unix_time_millis(d)
+                            one_result['date_formatted'] = d.strftime('%d.%m.%Y %H:%M:%S')
+                            if author_login in result:
+                                result[author_login].append(one_result)
+                            else:
+                                a = []
+                                a.append(one_result)
+                                result[author_login] = a
 
                 else:
                     print ("    Commit SHA could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
