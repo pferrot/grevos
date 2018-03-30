@@ -208,7 +208,10 @@ if len(to_process) == 0:
 print("Nb repos to process: %d" % len(to_process))
 
 for idx, row in enumerate(to_process, 1):
-    result = combine_results(result, get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process)))
+    a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process))
+    if a === None:
+        exit(1)
+    result = combine_results(result, a)
 
 
 # Sort and populate totals once all repos have been processed.
