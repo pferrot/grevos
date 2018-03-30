@@ -166,7 +166,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                     print ("    Nb commits processed so far: %d (last date: %s)" % (counter, one_result['date_formatted']))
 
         else:
-            print ("    Erreur retrieving commits (status code: %d) at %s" % (status_code, url))
+            print ("    Erreur retrieving commits (status code: %d) at %s" % (status_code, next_url))
             return None
 
     print ("    Done processing commits (total nb commits processed: %d)" % counter)
