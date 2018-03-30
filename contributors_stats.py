@@ -34,8 +34,8 @@ epoch = datetime.datetime.utcfromtimestamp(0)
 def unix_time_millis(dt):
     return (dt - epoch).total_seconds() * 1000
 
-def get_commit_details(scheme, host, owner, repo, commit_sha, git_token):
-    url = "%s%s/repos/%s/%s/commits/%s" % (scheme, host, owner, repo, commit_sha)
+def get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_token):
+    url = "%s%s%s/repos/%s/%s/commits/%s" % (scheme, host, base_path, owner, repo, commit_sha)
     #print (url)
     headers = \
         {
@@ -86,10 +86,9 @@ def populate_totals(the_array):
     else:
         return the_array
 
-# Show the version of CI dependencies, see https://git.autodesk.com/LocalizationServices/sbt-ci-helper
-# for more info.
-def get_rep_stats(scheme, host, owner, repo, branch, since, git_token, index_repo, total_nb_repos):
-    next_url = "%s%s/repos/%s/%s/commits?sha=%s%s (%s)" % (scheme, host, owner, repo, branch, "&since=%s" % since if since else "", "repo %d / %d" % (index_repo, total_nb_repos))
+
+def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, index_repo, total_nb_repos):
+    next_url = "%s%s%s/repos/%s/%s/commits?sha=%s%s (%s)" % (scheme, host, base_path, owner, repo, branch, "&since=%s" % since if since else "", "repo %d / %d" % (index_repo, total_nb_repos))
     print ("Processing: %s" % next_url)
     counter = 0
     result = {}
@@ -139,7 +138,7 @@ def get_rep_stats(scheme, host, owner, repo, branch, since, git_token, index_rep
                 if commit_sha:
                     #print ("SHA: %s" % commit_sha)
                     one_result["sha"] = commit_sha
-                    commit_details = get_commit_details(scheme, host, owner, repo, commit_sha, git_token)
+                    commit_details = get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_token)
                     if commit_details:
                         #print ("    Date: %s" % commit_details["date"])
                         #print ("    Additions: %s" % commit_details["stats"]["additions"])
@@ -209,7 +208,7 @@ if len(to_process) == 0:
 print("Nb repos to process: %d" % len(to_process))
 
 for idx, row in enumerate(to_process, 1):
-    result = combine_results(result, get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], idx, len(to_process)))
+    result = combine_results(result, get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process)))
 
 
 # Sort and populate totals once all repos have been processed.
