@@ -42,8 +42,8 @@ def get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_tok
          'Authorization': 'token %s' % git_token
         }
     reply = get(url, headers=headers)
-    code = reply.status_code
-    if code == 200:
+    status_code = reply.status_code
+    if status_code == 200:
         out = reply.content
         js = json.loads(out.decode('utf-8'))
         #print (json.dumps(js, indent=4, sort_keys=True))
@@ -98,8 +98,8 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
              'Authorization': 'token %s' % git_token
             }
         reply = get(next_url, headers=headers)
-        code = reply.status_code
-        if code == 200:
+        status_code = reply.status_code
+        if status_code == 200:
             next_url = None
             headers = reply.headers
             if "Link" in headers and 'rel="next"' in headers['Link']:
