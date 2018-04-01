@@ -49,6 +49,9 @@ print("CSV commits: %s " % args.csv_commits)
 if not args.file:
     print ('file not specified (use -h for details)')
     exit(1)
+elif len(args.file) != 1:
+    print ('one single source file allowed (use -h for details)')
+    exit(1)
 elif not os.path.exists(args.file[0]):
     print ('file does not exist: %s' % args.file[0])
     exit(1)
@@ -130,7 +133,10 @@ def populate_totals(the_array):
         return the_array
 
 def get_output_filename():
-    return 'contributors_stats_%s.csv' % datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    base_name = os.path.basename(args.file[0])
+    if base_name.find('.') > 0:
+        base_name = base_name[:base_name.find('.')]
+    return '%s_%s.csv' % (base_name, datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
 
 def get_output_filename_with_path():
     return get_filename_with_path(get_output_filename(), output_folder)
@@ -358,7 +364,8 @@ for x in result:
 #print (json.dumps(result, indent=4, sort_keys=True))
 
 if result and len(result) > 0:
-    with open(get_output_filename_with_path(), 'w', newline='') as csvfile:
+    output_filename = get_output_filename_with_path()
+    with open(output_filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         row = []
         row.append("Date")
@@ -455,6 +462,8 @@ if result and len(result) > 0:
                 row.append(total_total)
 
             writer.writerow(row)
+
+        print("Output file generated: %s" % output_filename)
 
 exit_code = 0
 print ('\nDone.')
