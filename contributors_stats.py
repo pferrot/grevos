@@ -26,7 +26,10 @@ csv_deletions = True
 csv_differences = True
 csv_totals = True
 csv_commits = True
+allow_unkwnown_author = True
 csv_date_format = "%m/%d/%Y %H:%M:%S"
+email_to_author_file = None
+email_to_author = {}
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -48,6 +51,8 @@ parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=
 parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='outputs differences (i.e. additions - deletions) in genereted CSV, default: yes')
 parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='outputs totals (i.e. additions + deletions) in genereted CSV, default: yes')
 parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='date format in the generated CSV, default: \'%s\'' % csv_date_format)
+parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='file specifying the username of authors whose name is not available in Git, but only their email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma')
+parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes')
 
 args = parser.parse_args()
 
@@ -66,12 +71,26 @@ if args.cache_folder:
     cache_folder = args.cache_folder
 if args.csv_date_format:
     csv_date_format = args.csv_date_format
+if args.allow_unkwnown_author:
+    allow_unkwnown_author = args.allow_unkwnown_author
+if args.email_to_author_file:
+    if not os.path.exists(args.email_to_author_file):
+        print ('file does not exist: %s' % args.email_to_author_file)
+        exit(1)
+    email_to_author_file = args.email_to_author_file
 
 print ("Source file: %s" % args.file[0])
 print ("Output folder: %s" % output_folder)
 print ("Cache folder: %s" % cache_folder)
 #print ("CSV date format: %s" % csv_date_format)
-
+if email_to_author_file:
+    print ("Email to author file: %s" % email_to_author_file)
+    eof_reader = csv.reader(open(email_to_author_file, newline=''), delimiter=',', quotechar='|')
+    for row in eof_reader:
+        if (len(row) != 2):
+            print ('wrong file format: %s' % args.email_to_author_file)
+            exit(1)
+        email_to_author[row[0].lower()] = row[1]
 
 direct_dependencies_cache = {}
 recursive_dependencies_cache = {}
@@ -269,7 +288,20 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
 
                 if not author_login:
                     print ("    Author could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
-                    author_login = "unknown"
+                    if "commit" in one_js and "author" in one_js["commit"] and "email" in one_js["commit"]["author"]:
+                        author_email = one_js["commit"]["author"]["email"]
+                        if author_email and author_email in email_to_author and email_to_author["author_email"]:
+                            author_login = email_to_author["author_email"]
+                            print("        Found author thanks to email to author file: %s" % author_login)
+                        else:
+                            print ("        Author could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
+                            if allow_unkwnown_author:
+                                print("        Continuing as user 'uknown' is allowed")
+                                author_login = "unknown"
+                            else:
+                                print("        Stopping as user 'uknown' is not allowed")
+                                exit(1)
+
                 #else:
                 #    print ("Author: %s" % author_login)
                 one_result["author"] = author_login
