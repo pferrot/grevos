@@ -192,8 +192,12 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
     print ("Processing: %s (%s)" % (next_url, "repo %d / %d" % (index_repo, total_nb_repos)))
 
     since_date = None
+    # The 'original_since_date' is what the user specified, whereas the 'since_date'
+    # might be the once recovered from the cache, see below.
+    original_since_date = None
     if since:
         since_date = datetime.datetime.strptime(since, "%Y-%m-%dT%H:%M:%SZ")
+        original_since_date = since_date
 
     counter = 0
     result = {}
@@ -278,11 +282,31 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                             one_result["stats"] = commit_details["stats"]
                             d = datetime.datetime.strptime(commit_details["date"], "%Y-%m-%dT%H:%M:%SZ")
 
-                            # It seems there is a bug with the GitHub API where even if the 'since' is properly set, sometimes
-                            # commits before that date are retrieved. This should avoid that.
-                            if since_date and d < since_date:
-                                #print("    Commit is before 'since' date, so ignoring: %s" % commit_sha)
+                            # It seems that even if the 'since' is properly set when using the API, sometimes
+                            # commits before that date are retrieved. That might be due to what is discussed
+                            # here: https://stackoverflow.com/questions/27036387/git-log-not-chronologically-ordered
+                            # In any case, that can be problematic when recovering from the cache as one might retrieve
+                            # a commit that was already in the cache, hence ending up duplicating it.
+                            # In order to avoid that, one must check if that commit is already there when using the cache.
+                            if original_since_date and d < original_since_date:
+                                print("    Commit is before 'since' date, so ignoring: %s" % commit_sha)
                                 continue
+                            elif since_date and d < since_date and from_cache:
+                                print("    Commit is before highest date from cache, need to check if it is a duplicate: %s" % commit_sha)
+                                duplicate_found = False
+                                for author_cache in from_cache[0].keys():
+                                    for author_entries in from_cache[0][author_cache]:
+                                        if "sha" in author_entries and author_entries["sha"] == commit_sha:
+                                            duplicate_found = True
+                                            break
+                                    if duplicate_found:
+                                        break
+                                if duplicate_found:
+                                    print("        Is a duplicate, ignoring it")
+                                    continue
+                                else:
+                                    print("        Not a duplicate, keeping it")
+                                # This can be a bit time consuming unfortunately.
 
                             one_result['date_unix'] = unix_time_millis(d)
                             one_result['date_formatted'] = d.strftime('%d.%m.%Y %H:%M:%S')
