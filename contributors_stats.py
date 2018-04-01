@@ -12,6 +12,10 @@ import hashlib
 
 from requests import get
 
+
+print ("Contributors stats")
+print ("------------------\n")
+
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
 schema_version = 1
@@ -22,6 +26,7 @@ csv_deletions = True
 csv_differences = True
 csv_totals = True
 csv_commits = True
+csv_date_format = "%m/%d/%Y %H:%M:%S"
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -42,10 +47,9 @@ parser.add_argument('-ca', '--csv_additions', type=str2bool, nargs='?', default=
 parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=True, help='outputs deletions in genereted CSV, default: yes')
 parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='outputs differences (i.e. additions - deletions) in genereted CSV, default: yes')
 parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='outputs totals (i.e. additions + deletions) in genereted CSV, default: yes')
+parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='date format in the generated CSV, default: \'%s\'' % csv_date_format)
 
 args = parser.parse_args()
-
-print("CSV commits: %s " % args.csv_commits)
 
 if not args.file:
     print ('file not specified (use -h for details)')
@@ -60,9 +64,13 @@ if args.output_folder:
     output_folder = args.output_folder
 if args.cache_folder:
     cache_folder = args.cache_folder
+if args.csv_date_format:
+    csv_date_format = args.csv_date_format
 
+print ("Source file: %s" % args.file[0])
 print ("Output folder: %s" % output_folder)
 print ("Cache folder: %s" % cache_folder)
+#print ("CSV date format: %s" % csv_date_format)
 
 
 direct_dependencies_cache = {}
@@ -245,6 +253,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
 
                 author_email = None
                 commit_sha = None
+                author_login = None
                 #print (json.dumps(one_js, indent=4, sort_keys=True))
                 if "author" in one_js and one_js["author"] and "login" in one_js["author"]:
                     author_login = one_js["author"]["login"]
@@ -310,7 +319,6 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                                 # This can be a bit time consuming unfortunately.
 
                             one_result['date_unix'] = unix_time_millis(d)
-                            one_result['date_formatted'] = d.strftime('%d.%m.%Y %H:%M:%S')
                             if author_login in result:
                                 result[author_login].append(one_result)
                             else:
@@ -323,7 +331,8 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
 
                 counter = counter + 1
                 if (counter % 20 == 0):
-                    print ("    Nb commits processed so far: %d (last date: %s)" % (counter, one_result['date_formatted']))
+
+                    print ("    Nb commits processed so far: %d (latest date: %s)" % (counter, datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ").strftime(csv_date_format)))
 
         else:
             print ("    Erreur retrieving commits (status code: %d) at %s" % (status_code, next_url))
@@ -441,7 +450,8 @@ if result and len(result) > 0:
             the_author = one_result["author"]
 
             row = []
-            row.append(one_result["date_formatted"])
+
+            row.append(datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ").strftime(csv_date_format))
 
             if not args.authors or author in args.authors:
 
