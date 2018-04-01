@@ -26,7 +26,6 @@ csv_deletions = True
 csv_differences = True
 csv_totals = True
 csv_commits = True
-allow_unkwnown_author = True
 csv_date_format = "%m/%d/%Y %H:%M:%S"
 email_to_author_file = None
 email_to_author = {}
@@ -293,11 +292,11 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                             print("        Found author thanks to email to author file: %s" % author_login)
                         else:
                             print ("        Author could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
-                            if allow_unkwnown_author:
-                                print("        Continuing as user 'uknown' is allowed")
+                            if args.allow_unkwnown_author:
+                                print("        Continuing as user 'unknown' is allowed")
                                 author_login = "unknown"
                             else:
-                                print("        Stopping as user 'uknown' is not allowed")
+                                print("        Stopping as user 'unknown' is not allowed")
                                 exit(1)
 
                 #else:
