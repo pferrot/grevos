@@ -34,6 +34,7 @@ def str2bool(v):
 parser = argparse.ArgumentParser(description='Collect contributors statistics on specified GitHub repositories.')
 parser.add_argument('-f', '--file', type=str, nargs=1, help='file containing the repos to process')
 parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='ignore commits with one of those files added')
+parser.add_argument('-a', '--authors', type=str, nargs='*', help='only outputs statistics for the specified authors (all authors by default)')
 parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='folder where the generated CSV files are stored, default: \'%s\'' % output_folder)
 parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='folder where cache files are stored, default: \'%s\'' % cache_folder)
 parser.add_argument('-cc', '--csv_commits', type=str2bool, nargs='?', default=True, help='outputs nb commits in genereted CSV, default: yes')
@@ -398,17 +399,18 @@ if result and len(result) > 0:
 
         authors_pos = {}
         for author in result.keys():
-            authors_pos[author] = len(authors_pos.keys()) + 1
-            if args.csv_commits:
-                row.append("%s (commits)" % author)
-            if args.csv_additions:
-                row.append("%s (additions)" % author)
-            if args.csv_deletions:
-                row.append("%s (deletions)" % author)
-            if args.csv_differences:
-                row.append("%s (difference)" % author)
-            if args.csv_totals:
-                row.append("%s (total)" % author)
+            if not args.authors or author in args.authors:
+                authors_pos[author] = len(authors_pos.keys()) + 1
+                if args.csv_commits:
+                    row.append("%s (commits)" % author)
+                if args.csv_additions:
+                    row.append("%s (additions)" % author)
+                if args.csv_deletions:
+                    row.append("%s (deletions)" % author)
+                if args.csv_differences:
+                    row.append("%s (difference)" % author)
+                if args.csv_totals:
+                    row.append("%s (total)" % author)
 
         # Add fictive 'Total' user to see general trend.
         nb_fields_per_author = 0
@@ -441,27 +443,37 @@ if result and len(result) > 0:
             row = []
             row.append(one_result["date_formatted"])
 
-            # Add empty cells to add in the right column.
-            for x in range(0, authors_pos[the_author] - 1):
-                for y in range(0, nb_fields_per_author):
-                    row.append("")
+            if not args.authors or author in args.authors:
 
+                # Add empty cells to add in the right column.
+                for x in range(0, authors_pos[the_author] - 1):
+                    for y in range(0, nb_fields_per_author):
+                        row.append("")
 
-            #row.append(one_result["author"])
-            #row.append(one_result["stats"]["additions"])
-            #row.append(one_result["stats"]["deletions"])
-            #row.append(one_result["stats"]["total"])
-            if args.csv_commits:
-                row.append(one_result["total_stats_author"]["nb_commits"])
-            if args.csv_additions:
-                row.append(one_result["total_stats_author"]["additions"])
-            if args.csv_deletions:
-                row.append(one_result["total_stats_author"]["deletions"])
-            if args.csv_differences:
-                row.append(one_result["total_stats_author"]["difference"])
-            if args.csv_totals:
-                row.append(one_result["total_stats_author"]["total"])
+                #row.append(one_result["author"])
+                #row.append(one_result["stats"]["additions"])
+                #row.append(one_result["stats"]["deletions"])
+                #row.append(one_result["stats"]["total"])
+                if args.csv_commits:
+                    row.append(one_result["total_stats_author"]["nb_commits"])
+                if args.csv_additions:
+                    row.append(one_result["total_stats_author"]["additions"])
+                if args.csv_deletions:
+                    row.append(one_result["total_stats_author"]["deletions"])
+                if args.csv_differences:
+                    row.append(one_result["total_stats_author"]["difference"])
+                if args.csv_totals:
+                    row.append(one_result["total_stats_author"]["total"])
 
+                for x in range(authors_pos[the_author], len(authors_pos)):
+                    for y in range(0, nb_fields_per_author):
+                        row.append("")
+            # We do not want to show users, still need to show totals, so fill
+            # in all other users with empty stats.
+            else:
+                for x in range(0, len(authors_pos)):
+                    for y in range(0, nb_fields_per_author):
+                        row.append("")
 
             # Add fictive 'Total' user to see general trend.
             total_nb_commits = total_nb_commits + 1
@@ -469,10 +481,6 @@ if result and len(result) > 0:
             total_deletions = total_deletions + one_result["stats"]["deletions"]
             total_difference = total_difference + one_result["stats"]["difference"]
             total_total = total_total + one_result["stats"]["total"]
-
-            for x in range(authors_pos[the_author], len(authors_pos)):
-                for y in range(0, nb_fields_per_author):
-                    row.append("")
 
             if args.csv_commits:
                 row.append(total_nb_commits)
