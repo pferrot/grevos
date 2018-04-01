@@ -424,14 +424,14 @@ def process_unknown(r):
                 author_email = x["author_email"]
             if "author_name" in x and x["author_name"]:
                 author_name = x["author_name"]
-            if author_email and author_email in email_to_author and email_to_author[author_email]:
-                author_login = email_to_author[author_email]
+            if author_email and author_email.lower() in email_to_author and email_to_author[author_email.lower()]:
+                author_login = email_to_author[author_email.lower()]
                 print("    Found author thanks to email to author file: %s --> %s" % (author_email, author_login))
-            elif not author_login and author_name in name_to_author and name_to_author[author_name]:
-                author_login = name_to_author[author_name]
+            elif not author_login and author_name.lower() in name_to_author and name_to_author[author_name.lower()]:
+                author_login = name_to_author[author_name.lower()]
                 print("    Found author thanks to name to author file: %s --> %s" % (author_name, author_login))
             else:
-                print ("   Author could not be found (email: %s, name: %s)" % (author_email, author_name))
+                print("    Author could not be found (email: %s, name: %s)" % (author_email if author_email else "N/A", author_name if author_name else "N/A"))
                 if args.allow_unkwnown_author:
                     print("        Continuing as user '%s' is allowed" % unknown_username)
                     new_unknown_data.append(x)
