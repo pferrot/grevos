@@ -29,6 +29,9 @@ csv_commits = True
 csv_date_format = "%m/%d/%Y %H:%M:%S"
 email_to_author_file = None
 email_to_author = {}
+name_to_author_file = None
+name_to_author = {}
+unknown_username = "<unknown>"
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -50,7 +53,8 @@ parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=
 parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='outputs differences (i.e. additions - deletions) in genereted CSV, default: yes')
 parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='outputs totals (i.e. additions + deletions) in genereted CSV, default: yes')
 parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='date format in the generated CSV, default: \'%s\'' % csv_date_format)
-parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='file specifying the username of authors whose name is not available in Git, but only their email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma')
+parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='file providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma')
+parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='file providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma')
 parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes')
 
 args = parser.parse_args()
@@ -75,6 +79,11 @@ if args.email_to_author_file:
         print ('file does not exist: %s' % args.email_to_author_file)
         exit(1)
     email_to_author_file = args.email_to_author_file
+if args.name_to_author_file:
+    if not os.path.exists(args.name_to_author_file):
+        print ('file does not exist: %s' % args.name_to_author_file)
+        exit(1)
+    name_to_author_file = args.name_to_author_file
 
 print ("Source file: %s" % args.file[0])
 print ("Output folder: %s" % output_folder)
@@ -88,6 +97,14 @@ if email_to_author_file:
             print ('wrong file format: %s' % args.email_to_author_file)
             exit(1)
         email_to_author[row[0].lower()] = row[1]
+if name_to_author_file:
+    print ("Name to author file: %s" % name_to_author_file)
+    eof_reader = csv.reader(open(name_to_author_file, newline=''), delimiter=',', quotechar='|')
+    for row in eof_reader:
+        if (len(row) != 2):
+            print ('wrong file format: %s' % args.name_to_author_file)
+            exit(1)
+        name_to_author[row[0].lower()] = row[1]
 
 direct_dependencies_cache = {}
 recursive_dependencies_cache = {}
@@ -283,25 +300,23 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
 
                 one_result = {}
 
-                if not author_login:
-                    print ("    Author could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
-                    if "commit" in one_js and "author" in one_js["commit"] and "email" in one_js["commit"]["author"]:
-                        author_email = one_js["commit"]["author"]["email"]
-                        if author_email and author_email in email_to_author and email_to_author[author_email]:
-                            author_login = email_to_author[author_email]
-                            print("        Found author thanks to email to author file: %s" % author_login)
-                        else:
-                            print ("        Author could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
-                            if args.allow_unkwnown_author:
-                                print("        Continuing as user 'unknown' is allowed")
-                                author_login = "unknown"
-                            else:
-                                print("        Stopping as user 'unknown' is not allowed")
-                                exit(1)
+
+                author_email = None
+                author_name = None
+                if "commit" in one_js and "author" in one_js["commit"] and "email" in one_js["commit"]["author"] and one_js["commit"]["author"]["email"]:
+                    author_email = one_js["commit"]["author"]["email"]
+                if "commit" in one_js and "author" in one_js["commit"] and "name" in one_js["commit"]["author"] and one_js["commit"]["author"]["name"]:
+                    author_name = one_js["commit"]["author"]["name"]
 
                 #else:
                 #    print ("Author: %s" % author_login)
+                if not author_login:
+                    author_login = unknown_username
                 one_result["author"] = author_login
+                if author_email:
+                    one_result["author_email"] = author_email
+                if author_name:
+                    one_result["author_name"] = author_name
                 if commit_sha:
                     #print ("SHA: %s" % commit_sha)
                     one_result["sha"] = commit_sha
@@ -394,6 +409,49 @@ def combine_results(r1, r2):
                 r1[x] = r2[x]
         return r1
 
+# Tries to find the actual user thanks to email/name mapping files.
+# Also reports an issue if unknown is not allowed and no mapping is found.
+def process_unknown(r):
+    if unknown_username in r and r[unknown_username]:
+        print ("Processing '%s' user data" % unknown_username)
+        unknown_data = r[unknown_username]
+        new_unknown_data = []
+        for x in unknown_data:
+            author_login = None
+            author_email = None
+            author_name = None
+            if "author_email" in x and x["author_email"]:
+                author_email = x["author_email"]
+            if "author_name" in x and x["author_name"]:
+                author_name = x["author_name"]
+            if author_email and author_email in email_to_author and email_to_author[author_email]:
+                author_login = email_to_author[author_email]
+                print("    Found author thanks to email to author file: %s --> %s" % (author_email, author_login))
+            elif not author_login and author_name in name_to_author and name_to_author[author_name]:
+                author_login = name_to_author[author_name]
+                print("    Found author thanks to name to author file: %s --> %s" % (author_name, author_login))
+            else:
+                print ("   Author could not be found (email: %s, name: %s)" % (author_email, author_name))
+                if args.allow_unkwnown_author:
+                    print("        Continuing as user '%s' is allowed" % unknown_username)
+                    new_unknown_data.append(x)
+                else:
+                    print("        Stopping as user '%s' is not allowed" % unknown_username)
+                    exit(1)
+
+            if author_login:
+                if not author_login in r:
+                    r[author_login] = []
+                r[author_login].append(x)
+
+        if len(new_unknown_data) > 0:
+            r[unknown_username] = new_unknown_data
+        else:
+            r.pop(unknown_username)
+
+    return r
+
+
 
 result = None
 to_process = []
@@ -405,7 +463,7 @@ if len(to_process) == 0:
     print("No repository to process")
     exit(1)
 
-print("Nb repos to process: %d" % len(to_process))
+print("Nb repos to process: %d\n" % len(to_process))
 
 for idx, row in enumerate(to_process, 1):
     a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process))
@@ -413,6 +471,7 @@ for idx, row in enumerate(to_process, 1):
         exit(1)
     result = combine_results(result, a)
 
+result = process_unknown(result)
 
 # Sort and populate totals once all repos have been processed.
 for x in result:
