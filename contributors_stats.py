@@ -71,8 +71,6 @@ if args.cache_folder:
     cache_folder = args.cache_folder
 if args.csv_date_format:
     csv_date_format = args.csv_date_format
-if args.allow_unkwnown_author:
-    allow_unkwnown_author = args.allow_unkwnown_author
 if args.email_to_author_file:
     if not os.path.exists(args.email_to_author_file):
         print ('file does not exist: %s' % args.email_to_author_file)
