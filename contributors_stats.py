@@ -288,7 +288,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                     if "commit" in one_js and "author" in one_js["commit"] and "email" in one_js["commit"]["author"]:
                         author_email = one_js["commit"]["author"]["email"]
                         if author_email and author_email in email_to_author and email_to_author[author_email]:
-                            author_login = email_to_author["author_email"]
+                            author_login = email_to_author[author_email]
                             print("        Found author thanks to email to author file: %s" % author_login)
                         else:
                             print ("        Author could not be found in: \n\n%s" % json.dumps(one_js, indent=4, sort_keys=True))
