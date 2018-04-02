@@ -495,6 +495,7 @@ if result and len(result) > 0:
 
 
         authors_pos = {}
+        auhtors_hidden = {}
         for author in result.keys():
             if not args.authors or author in args.authors:
                 authors_pos[author] = len(authors_pos.keys()) + 1
@@ -508,6 +509,10 @@ if result and len(result) > 0:
                     row.append("%s (difference)" % author)
                 if args.csv_totals:
                     row.append("%s (total)" % author)
+            elif args.authors:
+                auhtors_hidden[author] = 1
+
+
 
         # Add fictive 'Total' user to see general trend.
         nb_fields_per_author = 0
@@ -541,7 +546,7 @@ if result and len(result) > 0:
 
             row.append(datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ").strftime(csv_date_format))
 
-            if not args.authors or author in args.authors:
+            if not args.authors or the_author in args.authors:
 
                 # Add empty cells to add in the right column.
                 for x in range(0, authors_pos[the_author] - 1):
@@ -594,6 +599,9 @@ if result and len(result) > 0:
             writer.writerow(row)
 
         print("Output file generated: %s" % output_filename)
+        print("    Total nb authors: %d" % (len(auhtors_hidden.keys()) + len(authors_pos.keys())))
+        if len(auhtors_hidden.keys()) > 0:
+            print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(auhtors_hidden.keys()))
 
 exit_code = 0
 print ('\nDone.')
