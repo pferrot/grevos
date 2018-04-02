@@ -601,7 +601,7 @@ if result and len(result) > 0:
         print("Output file generated: %s" % output_filename)
         print("    Total nb authors: %d" % (len(auhtors_hidden.keys()) + len(authors_pos.keys())))
         if len(auhtors_hidden.keys()) > 0:
-            print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(auhtors_hidden.keys()))
+            print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(sorted(auhtors_hidden.keys(), key=str.lower)))
 
 exit_code = 0
 print ('\nDone.')
