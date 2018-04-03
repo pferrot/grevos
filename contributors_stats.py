@@ -18,7 +18,7 @@ print ("------------------\n")
 
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
-schema_version = 1
+schema_version = 2
 cache_folder = 'cache'
 output_folder = 'output'
 csv_additions = True
@@ -208,8 +208,10 @@ def cache(url, commits_to_ignore, the_json):
 def load_cache(url, commits_to_ignore):
     cache_file = get_cache_filename_with_path(url, commits_to_ignore)
     if not os.path.exists(cache_file):
+        print("    No cache (file does not exist: %s)" % cache_file)
         return None
     else:
+        print("    Cache found (file: %s)" % cache_file)
         try:
             with open(cache_file) as json_data:
                 d = json.load(json_data)
@@ -367,6 +369,8 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                                 # This can be a bit time consuming unfortunately.
 
                             one_result['date_unix'] = unix_time_millis(d)
+                            one_result['owner'] = owner
+                            one_result['repo'] = repo
                             if author_login in result:
                                 result[author_login].append(one_result)
                             else:
@@ -544,6 +548,8 @@ if result and len(result) > 0:
             row.append("%s (total)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
 
+        row.append("Repository")
+
         writer.writerow(row)
 
         total_nb_commits = 0
@@ -607,6 +613,9 @@ if result and len(result) > 0:
                 row.append(total_difference)
             if args.csv_totals:
                 row.append(total_total)
+
+            # Show the repo this commit is comming from.
+            row.append("%s/%s" % (one_result["owner"], one_result["repo"]))
 
             writer.writerow(row)
 
