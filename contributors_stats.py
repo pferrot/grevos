@@ -43,20 +43,22 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 parser = argparse.ArgumentParser(description='Collect contributors statistics on specified GitHub repositories.')
-parser.add_argument('-f', '--file', type=str, nargs=1, help='file containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
-parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='ignore commits with one of those files added')
-parser.add_argument('-a', '--authors', type=str, nargs='*', help='only outputs statistics for the specified authors (all authors by default)')
-parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='folder where the generated CSV files are stored, default: \'%s\'' % output_folder)
-parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='folder where cache files are stored, default: \'%s\'' % cache_folder)
-parser.add_argument('-cc', '--csv_commits', type=str2bool, nargs='?', default=True, help='outputs nb commits in genereted CSV, default: yes')
-parser.add_argument('-ca', '--csv_additions', type=str2bool, nargs='?', default=True, help='outputs additions in genereted CSV, default: yes')
-parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=True, help='outputs deletions in genereted CSV, default: yes')
-parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='outputs differences (i.e. additions - deletions) in genereted CSV, default: yes')
-parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='outputs totals (i.e. additions + deletions) in genereted CSV, default: yes')
-parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='date format in the generated CSV, default: \'%s\'' % csv_date_format)
-parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='file providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma')
-parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='file providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma')
-parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes')
+parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
+parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='Ignore commits with one of those files added.')
+parser.add_argument('-a', '--authors', type=str, nargs='*', help='Only outputs statistics for the specified authors (all authors by default).')
+parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='Folder where the generated CSV files are stored, default: \'%s\'.' % output_folder)
+parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='Folder where cache files are stored, default: \'%s\'.' % cache_folder)
+parser.add_argument('-cc', '--csv_commits', type=str2bool, nargs='?', default=True, help='Outputs nb commits in genereted CSV, default: yes.')
+parser.add_argument('-ca', '--csv_additions', type=str2bool, nargs='?', default=True, help='Outputs additions in genereted CSV, default: yes.')
+parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=True, help='Outputs deletions in genereted CSV, default: yes.')
+parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='Outputs differences (i.e. additions - deletions) in genereted CSV, default: yes.')
+parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='Outputs totals (i.e. additions + deletions) in genereted CSV, default: yes.')
+parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % csv_date_format)
+parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
+parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
+parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes.')
+parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
+parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
 
 args = parser.parse_args()
 
@@ -162,6 +164,13 @@ def remove_commits_to_ignore(r, commits_to_ignore):
                 if "sha" in x and x["sha"] in commits_to_ignore:
                     print("    Removing commit to ignore in %s/%s: %s" % (x["owner"], x["repo"], x["sha"]))
                     to_remove_indexes.append(idx)
+                elif "stats" in x and "difference" in x["stats"]:
+                    if args.max_commit_difference != None and x["stats"]["difference"] > args.max_commit_difference :
+                        print("    Removing commit because it is above the max difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
+                        to_remove_indexes.append(idx)
+                    elif args.min_commit_difference != None and x["stats"]["difference"] < args.min_commit_difference :
+                        print("    Removing commit because it is below the min difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
+                        to_remove_indexes.append(idx)
             for idx in reversed(to_remove_indexes):
                 del author_data[idx]
     return r
