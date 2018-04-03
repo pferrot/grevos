@@ -152,6 +152,20 @@ def get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_tok
         print ("    Erreur retrieving commit (status code: %d) at %s" % (status_code, url))
         return None
 
+def remove_commits_to_ignore(r, commits_to_ignore):
+    if r and len(r.keys()) and commits_to_ignore and len(commits_to_ignore) > 0:
+        print("Removing commits to ignore")
+        for k in r.keys():
+            author_data = r[k]
+            to_remove_indexes = []
+            for idx, x  in enumerate(author_data):
+                if "sha" in x and x["sha"] in commits_to_ignore:
+                    print("    Removing commit to ignore in %s/%s: %s" % (x["owner"], x["repo"], x["sha"]))
+                    to_remove_indexes.append(idx)
+            for idx in reversed(to_remove_indexes):
+                del author_data[idx]
+    return r
+
 def populate_totals(the_array):
     if the_array:
         previous = None
@@ -187,26 +201,26 @@ def get_output_filename_with_path():
 def get_filename_with_path(filename, folder):
     return "%s%s%s" % (folder, "" if folder.endswith("/") else "/", filename)
 
-def get_cache_filename(url, commits_to_ignore):
+def get_cache_filename(url):
     # Important to take args.ignore_files into account as the result depends on this parameter.
-    cache_filename = hashlib.sha1(("%s%s%d%s" % (url, ",".join(args.ignore_files) if args.ignore_files else "", schema_version, "" if not commits_to_ignore else "-".join(commits_to_ignore))).encode('utf-8')).hexdigest()
+    cache_filename = hashlib.sha1(("%s%s%d" % (url, ",".join(args.ignore_files) if args.ignore_files else "", schema_version)).encode('utf-8')).hexdigest()
     #print("Cache filename: %s" % cache_filename)
     return cache_filename
 
-def get_cache_filename_with_path(url, commits_to_ignore):
-    return get_filename_with_path(get_cache_filename(url, commits_to_ignore), cache_folder)
+def get_cache_filename_with_path(url):
+    return get_filename_with_path(get_cache_filename(url), cache_folder)
 
 # Creates/overwrites the file with the given json.
-def cache(url, commits_to_ignore, the_json):
+def cache(url, the_json):
     #print ("    Caching: %s" % url)
-    with open(get_cache_filename_with_path(url, commits_to_ignore), 'w') as outfile:
+    with open(get_cache_filename_with_path(url), 'w') as outfile:
         json.dump(the_json, outfile)
 
 # Returns a tuple (JSON, highest_date, sha, nb_commits), where highest_date is the date of the
 # most recent commit in the JSON and sha the SHA for that most recent commit.
 # Returns None if no cache file exists.
-def load_cache(url, commits_to_ignore):
-    cache_file = get_cache_filename_with_path(url, commits_to_ignore)
+def load_cache(url):
+    cache_file = get_cache_filename_with_path(url)
     if not os.path.exists(cache_file):
         print("    No cache (file does not exist: %s)" % cache_file)
         return None
@@ -231,7 +245,7 @@ def load_cache(url, commits_to_ignore):
 
 
 
-def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, commits_to_ignore, index_repo, total_nb_repos):
+def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, index_repo, total_nb_repos):
     next_url = "%s%s%s/repos/%s/%s/commits?sha=%s%s" % (scheme, host, base_path, owner, repo, branch, "&since=%s" % since if since else "")
     cache_url = next_url
     print ("Processing: %s (%s)" % (next_url, "repo %d / %d" % (index_repo, total_nb_repos)))
@@ -247,7 +261,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
     counter = 0
     result = {}
 
-    from_cache = load_cache(cache_url, commits_to_ignore)
+    from_cache = load_cache(cache_url)
     cache_sha = None
     # We found something in cache and there is a date.
     if from_cache and from_cache[1]:
@@ -323,9 +337,6 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                 if commit_sha:
                     #print ("SHA: %s" % commit_sha)
                     one_result["sha"] = commit_sha
-                    if commits_to_ignore and commit_sha in commits_to_ignore:
-                        print("    Skipping commit to ignore: %s" % commit_sha)
-                        continue
                     commit_details = get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_token)
                     if commit_details:
                         # Handle case where commit must be ignored.
@@ -391,7 +402,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
             return None
 
     print ("    Done processing commits (total nb commits processed: %d)" % counter)
-    cache(cache_url, commits_to_ignore, result)
+    cache(cache_url, result)
     return result
 
 def sort_results(r):
@@ -482,12 +493,13 @@ for idx, row in enumerate(to_process, 1):
     commits_to_ignore = None
     if len(row) == 9:
         commits_to_ignore = row[8].split(commits_to_ignore_separator)
-    a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], commits_to_ignore, idx, len(to_process))
+    a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process))
     if a == None:
         exit(1)
     result = combine_results(result, a)
 
 result = process_unknown(result)
+result = remove_commits_to_ignore(result, commits_to_ignore)
 
 # Sort and populate totals once all repos have been processed.
 for x in result:
