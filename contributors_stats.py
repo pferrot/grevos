@@ -95,7 +95,7 @@ if email_to_author_file:
     eof_reader = csv.reader(open(email_to_author_file, newline=''), delimiter=',', quotechar='|')
     for row in eof_reader:
         if (len(row) != 2):
-            print ('wrong file format: %s' % args.email_to_author_file)
+            print ('wrong file format: %s (line: %s)' % (args.email_to_author_file, ",".join(row)))
             exit(1)
         email_to_author[row[0].lower()] = row[1]
 if name_to_author_file:
@@ -103,7 +103,7 @@ if name_to_author_file:
     eof_reader = csv.reader(open(name_to_author_file, newline=''), delimiter=',', quotechar='|')
     for row in eof_reader:
         if (len(row) != 2):
-            print ('wrong file format: %s' % args.name_to_author_file)
+            print ('wrong file format: %s (line: %s)' % (args.name_to_author_file, ",".join(row)))
             exit(1)
         name_to_author[row[0].lower()] = row[1]
 
@@ -478,7 +478,7 @@ to_process = []
 csv_reader = csv.reader(open(args.file[0], newline=''), delimiter=',', quotechar='|')
 for row in csv_reader:
     if len(row) < 8 or len(row) > 9:
-        print ('wrong file format: %s' % args.file[0])
+        print ('wrong file format: %s (line: %s)' % (args.file[0], ",".join(row)))
         exit(1)
     to_process.append(row)
 
