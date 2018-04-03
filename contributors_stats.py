@@ -32,6 +32,7 @@ email_to_author = {}
 name_to_author_file = None
 name_to_author = {}
 unknown_username = "<unknown>"
+commits_to_ignore_separator = "-"
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -42,7 +43,7 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 parser = argparse.ArgumentParser(description='Collect contributors statistics on specified GitHub repositories.')
-parser.add_argument('-f', '--file', type=str, nargs=1, help='file containing the repos to process')
+parser.add_argument('-f', '--file', type=str, nargs=1, help='file containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
 parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='ignore commits with one of those files added')
 parser.add_argument('-a', '--authors', type=str, nargs='*', help='only outputs statistics for the specified authors (all authors by default)')
 parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='folder where the generated CSV files are stored, default: \'%s\'' % output_folder)
@@ -186,26 +187,26 @@ def get_output_filename_with_path():
 def get_filename_with_path(filename, folder):
     return "%s%s%s" % (folder, "" if folder.endswith("/") else "/", filename)
 
-def get_cache_filename(url):
+def get_cache_filename(url, commits_to_ignore):
     # Important to take args.ignore_files into account as the result depends on this parameter.
-    cache_filename = hashlib.sha1(("%s%s%d" % (url, ",".join(args.ignore_files) if args.ignore_files else "", schema_version)).encode('utf-8')).hexdigest()
+    cache_filename = hashlib.sha1(("%s%s%d%s" % (url, ",".join(args.ignore_files) if args.ignore_files else "", schema_version, "" if not commits_to_ignore else "-".join(commits_to_ignore))).encode('utf-8')).hexdigest()
     #print("Cache filename: %s" % cache_filename)
     return cache_filename
 
-def get_cache_filename_with_path(url):
-    return get_filename_with_path(get_cache_filename(url), cache_folder)
+def get_cache_filename_with_path(url, commits_to_ignore):
+    return get_filename_with_path(get_cache_filename(url, commits_to_ignore), cache_folder)
 
 # Creates/overwrites the file with the given json.
-def cache(url, the_json):
+def cache(url, commits_to_ignore, the_json):
     #print ("    Caching: %s" % url)
-    with open(get_cache_filename_with_path(url), 'w') as outfile:
+    with open(get_cache_filename_with_path(url, commits_to_ignore), 'w') as outfile:
         json.dump(the_json, outfile)
 
 # Returns a tuple (JSON, highest_date, sha, nb_commits), where highest_date is the date of the
 # most recent commit in the JSON and sha the SHA for that most recent commit.
 # Returns None if no cache file exists.
-def load_cache(url):
-    cache_file = get_cache_filename_with_path(url)
+def load_cache(url, commits_to_ignore):
+    cache_file = get_cache_filename_with_path(url, commits_to_ignore)
     if not os.path.exists(cache_file):
         return None
     else:
@@ -228,7 +229,7 @@ def load_cache(url):
 
 
 
-def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, index_repo, total_nb_repos):
+def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, commits_to_ignore, index_repo, total_nb_repos):
     next_url = "%s%s%s/repos/%s/%s/commits?sha=%s%s" % (scheme, host, base_path, owner, repo, branch, "&since=%s" % since if since else "")
     cache_url = next_url
     print ("Processing: %s (%s)" % (next_url, "repo %d / %d" % (index_repo, total_nb_repos)))
@@ -244,7 +245,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
     counter = 0
     result = {}
 
-    from_cache = load_cache(cache_url)
+    from_cache = load_cache(cache_url, commits_to_ignore)
     cache_sha = None
     # We found something in cache and there is a date.
     if from_cache and from_cache[1]:
@@ -320,6 +321,9 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                 if commit_sha:
                     #print ("SHA: %s" % commit_sha)
                     one_result["sha"] = commit_sha
+                    if commits_to_ignore and commit_sha in commits_to_ignore:
+                        print("    Skipping commit to ignore: %s" % commit_sha)
+                        continue
                     commit_details = get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_token)
                     if commit_details:
                         # Handle case where commit must be ignored.
@@ -383,7 +387,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
             return None
 
     print ("    Done processing commits (total nb commits processed: %d)" % counter)
-    cache(cache_url, result)
+    cache(cache_url, commits_to_ignore, result)
     return result
 
 def sort_results(r):
@@ -458,6 +462,9 @@ result = None
 to_process = []
 csv_reader = csv.reader(open(args.file[0], newline=''), delimiter=',', quotechar='|')
 for row in csv_reader:
+    if len(row) < 8 or len(row) > 9:
+        print ('wrong file format: %s' % args.file[0])
+        exit(1)
     to_process.append(row)
 
 if len(to_process) == 0:
@@ -467,7 +474,11 @@ if len(to_process) == 0:
 print("Nb repos to process: %d\n" % len(to_process))
 
 for idx, row in enumerate(to_process, 1):
-    a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process))
+    # Commits to ignore.
+    commits_to_ignore = None
+    if len(row) == 9:
+        commits_to_ignore = row[8].split(commits_to_ignore_separator)
+    a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], commits_to_ignore, idx, len(to_process))
     if a == None:
         exit(1)
     result = combine_results(result, a)
