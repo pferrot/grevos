@@ -440,6 +440,7 @@ def process_unknown(r):
                     exit(1)
 
             if author_login:
+                x["author"] = author_login
                 if not author_login in r:
                     r[author_login] = []
                 r[author_login].append(x)
