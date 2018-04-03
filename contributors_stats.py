@@ -488,11 +488,11 @@ if len(to_process) == 0:
 
 print("Nb repos to process: %d\n" % len(to_process))
 
+commits_to_ignore = []
 for idx, row in enumerate(to_process, 1):
     # Commits to ignore.
-    commits_to_ignore = None
     if len(row) == 9:
-        commits_to_ignore = row[8].split(commits_to_ignore_separator)
+         commits_to_ignore.extend(row[8].split(commits_to_ignore_separator))
     a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process))
     if a == None:
         exit(1)
