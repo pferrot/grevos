@@ -549,6 +549,7 @@ if result and len(result) > 0:
             nb_fields_per_author = nb_fields_per_author + 1
 
         row.append("Repository")
+        row.append("Commit SHA")
 
         writer.writerow(row)
 
@@ -616,6 +617,8 @@ if result and len(result) > 0:
 
             # Show the repo this commit is comming from.
             row.append("%s/%s" % (one_result["owner"], one_result["repo"]))
+
+            row.append("%s" % one_result["sha"])
 
             writer.writerow(row)
 
