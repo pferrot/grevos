@@ -174,16 +174,15 @@ def remove_commits_to_ignore(r, commits_to_ignore):
             author_data = r[k]
             to_remove_indexes = []
             for idx, x  in enumerate(author_data):
-                if "sha" in x and x["sha"] in commits_to_ignore:
+                if "stats" in x and "difference" in x["stats"] and args.max_commit_difference != None and x["stats"]["difference"] > args.max_commit_difference:
+                    print("    Removing commit because it is above the max difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
+                    to_remove_indexes.append(idx)
+                elif "stats" in x and "difference" in x["stats"] and args.min_commit_difference != None and x["stats"]["difference"] < args.min_commit_difference :
+                    print("    Removing commit because it is below the min difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
+                    to_remove_indexes.append(idx)
+                elif "sha" in x and x["sha"] in commits_to_ignore:
                     print("    Removing commit to ignore in %s/%s: %s" % (x["owner"], x["repo"], x["sha"]))
                     to_remove_indexes.append(idx)
-                elif "stats" in x and "difference" in x["stats"]:
-                    if args.max_commit_difference != None and x["stats"]["difference"] > args.max_commit_difference :
-                        print("    Removing commit because it is above the max difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
-                        to_remove_indexes.append(idx)
-                    elif args.min_commit_difference != None and x["stats"]["difference"] < args.min_commit_difference :
-                        print("    Removing commit because it is below the min difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
-                        to_remove_indexes.append(idx)
             for idx in reversed(to_remove_indexes):
                 del author_data[idx]
     return r
