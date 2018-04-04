@@ -55,13 +55,13 @@ parser.add_argument('-ca', '--csv_additions', type=str2bool, nargs='?', default=
 parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=True, help='Outputs deletions in genereted CSV, default: yes.')
 parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='Outputs differences (i.e. additions - deletions) in genereted CSV, default: yes.')
 parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='Outputs totals (i.e. additions + deletions) in genereted CSV, default: yes.')
-parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % csv_date_format)
+parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % csv_date_format.replace('%', '%%'))
 parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
 parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
 parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes.')
 parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
-parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors, default: keep all.')
+parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors based on the number of (additions - deletions), default: keep all.')
 parser.add_argument('-mph', '--max_points_html', type=int, nargs='?', help='Maximum number of points in the HTML output. A graph with too many points will not offer a good user experience.')
 
 
@@ -592,7 +592,9 @@ if result and len(result) > 0:
         html_data = {}
 
         for author in sorted(result.keys(), key=str.lower):
-            if not args.authors or author in args.authors or not top_contributors or author in top_contributors:
+            if args.authors and author in args.authors:
+                authors_hidden[author] = 1
+            elif not args.authors or author in args.authors or not top_contributors or author in top_contributors:
                 authors_pos[author] = len(authors_pos.keys()) + 1
                 if args.csv_commits:
                     row.append("%s (commits)" % author)
@@ -619,8 +621,6 @@ if result and len(result) > 0:
                     html_data["%s (total)" % author] = {}
                     html_data["%s (total)" % author]["data"] = []
                     html_data["%s (total)" % author]["label"] = "%s (total)" % author
-            elif args.authors:
-                authors_hidden[author] = 1
 
 
 
@@ -684,7 +684,7 @@ if result and len(result) > 0:
             html_object["seconds"] = the_date.second
 
 
-            if not args.authors or the_author in args.authors or not top_contributors or the_author in top_contributors:
+            if not the_author in authors_hidden and (not top_contributors or the_author in top_contributors):
                 # Add empty cells to add in the right column.
                 for x in range(0, authors_pos[the_author] - 1):
                     for y in range(0, nb_fields_per_author):
