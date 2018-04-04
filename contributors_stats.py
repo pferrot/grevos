@@ -777,7 +777,8 @@ if result and len(result) > 0:
             for hdv in html_data_values:
                 for h in hdv["data"]:
                     total_nb_points = total_nb_points + len(h)
-            max_points_divide_factor = total_nb_points / args.max_points_html
+            if total_nb_points > args.max_points_html:
+                max_points_divide_factor = int(total_nb_points / args.max_points_html)
 
         output_from_parsed_template = template.render(labels_and_data=html_data_values, generation_date=now.strftime(csv_date_format), repositories=sorted(repos_html, key=str.lower), max_points_divide_factor=max_points_divide_factor)
 
