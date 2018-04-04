@@ -11,6 +11,7 @@ import os.path
 import hashlib
 
 from requests import get
+from jinja2 import Environment, FileSystemLoader
 
 
 print ("Contributors stats")
@@ -33,6 +34,7 @@ name_to_author_file = None
 name_to_author = {}
 unknown_username = "<unknown>"
 commits_to_ignore_separator = "-"
+now = datetime.datetime.now()
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -59,6 +61,9 @@ parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='
 parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes.')
 parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
+parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors, default: keep all.')
+#parser.add_argument('-mph', '--max_points_html', type=int, nargs='?', help='Maximum number of points in the HTML output. A graph with too many points will not offer a good user experience.')
+
 
 args = parser.parse_args()
 
@@ -87,6 +92,14 @@ if args.name_to_author_file:
         print ('file does not exist: %s' % args.name_to_author_file)
         exit(1)
     name_to_author_file = args.name_to_author_file
+if args.top_contributors != None:
+    if args.top_contributors < 1:
+        print ('number of top contributors must be a positive integer')
+        exit(1)
+#if args.max_points_html != None:
+#    if args.max_points_html < 1:
+#        print ('max number of points in HTML must be a positive integer')
+#        exit(1)
 
 print ("Source file: %s" % args.file[0])
 print ("Output folder: %s" % output_folder)
@@ -198,14 +211,23 @@ def populate_totals(the_array):
     else:
         return the_array
 
-def get_output_filename():
+def get_csv_output_filename():
+    return get_output_filename("csv")
+
+def get_html_output_filename():
+    return get_output_filename("html")
+
+def get_output_filename(extension):
     base_name = os.path.basename(args.file[0])
     if base_name.find('.') > 0:
         base_name = base_name[:base_name.find('.')]
-    return '%s_%s.csv' % (base_name, datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+    return '%s_%s.%s' % (base_name, now.strftime("%Y%m%d%H%M%S"), extension)
 
-def get_output_filename_with_path():
-    return get_filename_with_path(get_output_filename(), output_folder)
+def get_csv_output_filename_with_path():
+    return get_filename_with_path(get_csv_output_filename(), output_folder)
+
+def get_html_output_filename_with_path():
+    return get_filename_with_path(get_html_output_filename(), output_folder)
 
 def get_filename_with_path(filename, folder):
     return "%s%s%s" % (folder, "" if folder.endswith("/") else "/", filename)
@@ -480,15 +502,41 @@ def process_unknown(r):
 
     return r
 
+def get_top_contributors(r):
+    if not r or not len(r.keys()) or not args.top_contributors:
+        return None
+    else:
+        print("Calculating top contributors")
+        max_contribs = []
+        for k in r.keys():
+            author_data = sort_results(r[k])
+            author_contrib = {}
+            author_contrib["author"] = k
+            if "stats" in author_data and "difference" in author_data["stats"]:
+                print("Author % s max contrib: %d" % (k, author_data["stats"]["difference"]))
+                author_contrib["difference"] = author_data["stats"]["difference"]
+            else:
+                author_contrib["difference"] = 0
+            max_contribs.append(author_contrib)
+        max_contribs = sorted(max_contribs, key=lambda k: k['difference'], reverse=True)
+        to_keep = max_contribs[:args.top_contributors]
+        no_keep = max_contribs[args.top_contributors:]
+        if to_keep:
+            print("    Top contributors (in alphabetical order):\n        %s" % "\n        ".join(sorted([i["author"] for i in to_keep], key=str.lower)))
+        #if no_keep:
+        #    print("    Not Keeping:\n        %s" % "\n        ".join(sorted([i["author"] for i in no_keep], key=str.lower)))
 
+        return [i["author"] for i in to_keep]
 
 result = None
 to_process = []
+repos_html = []
 csv_reader = csv.reader(open(args.file[0], newline=''), delimiter=',', quotechar='|')
 for row in csv_reader:
     if len(row) < 8 or len(row) > 9:
         print ('wrong file format: %s (line: %s)' % (args.file[0], ",".join(row)))
         exit(1)
+    repos_html.append("%s/%s" % (row[3], row[4]))
     to_process.append(row)
 
 if len(to_process) == 0:
@@ -523,31 +571,50 @@ for x in result:
 #print (json.dumps(result, indent=4, sort_keys=True))
 
 if result and len(result) > 0:
-    output_filename = get_output_filename_with_path()
+    output_filename = get_csv_output_filename_with_path()
     with open(output_filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         row = []
         row.append("Date")
         #row.append("Author")
 
-
         authors_pos = {}
-        auhtors_hidden = {}
+        authors_hidden = {}
+
+        top_contributors = get_top_contributors(result)
+
+        html_data = {}
+
         for author in result.keys():
-            if not args.authors or author in args.authors:
+            if not args.authors or author in args.authors or not top_contributors or author in top_contributors:
                 authors_pos[author] = len(authors_pos.keys()) + 1
                 if args.csv_commits:
                     row.append("%s (commits)" % author)
+                    html_data["%s (commits)" % author] = {}
+                    html_data["%s (commits)" % author]["data"] = []
+                    html_data["%s (commits)" % author]["label"] = "%s (commits)" % author
                 if args.csv_additions:
                     row.append("%s (additions)" % author)
+                    html_data["%s (additions)" % author] = {}
+                    html_data["%s (additions)" % author]["data"] = []
+                    html_data["%s (additions)" % author]["label"] = "%s (additions)" % author
                 if args.csv_deletions:
                     row.append("%s (deletions)" % author)
+                    html_data["%s (deletions)" % author] = {}
+                    html_data["%s (deletions)" % author]["data"] = []
+                    html_data["%s (deletions)" % author]["label"] = "%s (deletions)" % author
                 if args.csv_differences:
                     row.append("%s (difference)" % author)
+                    html_data["%s (difference)" % author] = {}
+                    html_data["%s (difference)" % author]["data"] = []
+                    html_data["%s (difference)" % author]["label"] = "%s (difference)" % author
                 if args.csv_totals:
                     row.append("%s (total)" % author)
+                    html_data["%s (total)" % author] = {}
+                    html_data["%s (total)" % author]["data"] = []
+                    html_data["%s (total)" % author]["label"] = "%s (total)" % author
             elif args.authors:
-                auhtors_hidden[author] = 1
+                authors_hidden[author] = 1
 
 
 
@@ -556,18 +623,33 @@ if result and len(result) > 0:
         if args.csv_commits:
             row.append("%s (commits)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
+            html_data["%s (commits)" % "TOTAL"] = {}
+            html_data["%s (commits)" % "TOTAL"]["data"] = []
+            html_data["%s (commits)" % "TOTAL"]["label"] = "%s (commits)" % "TOTAL"
         if args.csv_additions:
             row.append("%s (additions)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
+            html_data["%s (additions)" % "TOTAL"] = {}
+            html_data["%s (additions)" % "TOTAL"]["data"] = []
+            html_data["%s (additions)" % "TOTAL"]["label"] = "%s (additions)" % "TOTAL"
         if args.csv_deletions:
             row.append("%s (deletions)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
+            html_data["%s (deletions)" % "TOTAL"] = {}
+            html_data["%s (deletions)" % "TOTAL"]["data"] = []
+            html_data["%s (deletions)" % "TOTAL"]["label"] = "%s (deletions)" % "TOTAL"
         if args.csv_differences:
             row.append("%s (difference)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
+            html_data["%s (difference)" % "TOTAL"] = {}
+            html_data["%s (difference)" % "TOTAL"]["data"] = []
+            html_data["%s (difference)" % "TOTAL"]["label"] = "%s (difference)" % "TOTAL"
         if args.csv_totals:
             row.append("%s (total)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
+            html_data["%s (total)" % "TOTAL"] = {}
+            html_data["%s (total)" % "TOTAL"]["data"] = []
+            html_data["%s (total)" % "TOTAL"]["label"] = "%s (total)" % "TOTAL"
 
         row.append("Repository")
         row.append("Commit SHA")
@@ -579,15 +661,24 @@ if result and len(result) > 0:
         total_deletions = 0
         total_difference = 0
         total_total = 0
+
         for one_result in merge_results(result):
             the_author = one_result["author"]
 
             row = []
+            the_date = datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ")
+            row.append(the_date.strftime(csv_date_format))
+            html_object = {}
+            html_object["year"] = the_date.year
+            # -1 because months are 0-indexed in JavaScript.
+            html_object["month"] = the_date.month - 1
+            html_object["day"] = the_date.day
+            html_object["hours"] = the_date.hour
+            html_object["minutes"] = the_date.minute
+            html_object["seconds"] = the_date.second
 
-            row.append(datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ").strftime(csv_date_format))
 
-            if not args.authors or the_author in args.authors:
-
+            if not args.authors or the_author in args.authors or not top_contributors or the_author in top_contributors:
                 # Add empty cells to add in the right column.
                 for x in range(0, authors_pos[the_author] - 1):
                     for y in range(0, nb_fields_per_author):
@@ -599,14 +690,24 @@ if result and len(result) > 0:
                 #row.append(one_result["stats"]["total"])
                 if args.csv_commits:
                     row.append(one_result["total_stats_author"]["nb_commits"])
+                    html_object["y"] = one_result["total_stats_author"]["nb_commits"]
+                    html_data["%s (commits)" % the_author]["data"].append(html_object)
                 if args.csv_additions:
                     row.append(one_result["total_stats_author"]["additions"])
+                    html_object["y"] = one_result["total_stats_author"]["additions"]
+                    html_data["%s (additions)" % the_author]["data"].append(html_object)
                 if args.csv_deletions:
                     row.append(one_result["total_stats_author"]["deletions"])
+                    html_object["y"] = one_result["total_stats_author"]["deletions"]
+                    html_data["%s (deletions)" % the_author]["data"].append(html_object)
                 if args.csv_differences:
                     row.append(one_result["total_stats_author"]["difference"])
+                    html_object["y"] = one_result["total_stats_author"]["difference"]
+                    html_data["%s (difference)" % the_author]["data"].append(html_object)
                 if args.csv_totals:
                     row.append(one_result["total_stats_author"]["total"])
+                    html_object["y"] = one_result["total_stats_author"]["total"]
+                    html_data["%s (total)" % the_author]["data"].append(html_object)
 
                 for x in range(authors_pos[the_author], len(authors_pos)):
                     for y in range(0, nb_fields_per_author):
@@ -625,16 +726,35 @@ if result and len(result) > 0:
             total_difference = total_difference + one_result["stats"]["difference"]
             total_total = total_total + one_result["stats"]["total"]
 
+            html_object = {}
+            html_object["year"] = the_date.year
+            # -1 because months are 0-indexed in JavaScript.
+            html_object["month"] = the_date.month - 1
+            html_object["day"] = the_date.day
+            html_object["hours"] = the_date.hour
+            html_object["minutes"] = the_date.minute
+            html_object["seconds"] = the_date.second
+
             if args.csv_commits:
                 row.append(total_nb_commits)
+                html_object["y"] = total_nb_commits
+                html_data["%s (commits)" % "TOTAL"]["data"].append(html_object)
             if args.csv_additions:
                 row.append(total_additions)
+                html_object["y"] = total_additions
+                html_data["%s (additions)" % "TOTAL"]["data"].append(html_object)
             if args.csv_deletions:
                 row.append(total_deletions)
+                html_object["y"] = total_deletions
+                html_data["%s (deletions)" % "TOTAL"]["data"].append(html_object)
             if args.csv_differences:
                 row.append(total_difference)
+                html_object["y"] = total_difference
+                html_data["%s (difference)" % "TOTAL"]["data"].append(html_object)
             if args.csv_totals:
                 row.append(total_total)
+                html_object["y"] = total_total
+                html_data["%s (total)" % "TOTAL"]["data"].append(html_object)
 
             # Show the repo this commit is comming from.
             row.append("%s/%s" % (one_result["owner"], one_result["repo"]))
@@ -644,9 +764,23 @@ if result and len(result) > 0:
             writer.writerow(row)
 
         print("Output file generated: %s" % output_filename)
-        print("    Total nb authors: %d" % (len(auhtors_hidden.keys()) + len(authors_pos.keys())))
-        if len(auhtors_hidden.keys()) > 0:
-            print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(sorted(auhtors_hidden.keys(), key=str.lower)))
+
+        # Create the jinja2 environment.
+        # Notice the use of trim_blocks, which greatly helps control whitespace.
+        env = Environment(loader=FileSystemLoader('templates'))
+        template = env.get_template('chart.html')
+        output_from_parsed_template = template.render(labels_and_data=html_data.values(), generation_date=now.strftime(csv_date_format), repositories=sorted(repos_html, key=str.lower))
+
+        # to save the results
+        html_output_filename = get_html_output_filename_with_path()
+        with open(html_output_filename, "w") as fh:
+            fh.write(output_from_parsed_template)
+
+        print("Output file generated: %s" % html_output_filename)
+
+        print("    Total nb authors: %d" % (len(authors_hidden.keys()) + len(authors_pos.keys())))
+        if len(authors_hidden.keys()) > 0:
+            print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(sorted(authors_hidden.keys(), key=str.lower)))
 
 exit_code = 0
 print ('\nDone.')
