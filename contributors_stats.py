@@ -223,6 +223,12 @@ def get_output_filename(extension):
         base_name = base_name[:base_name.find('.')]
     return '%s_%s.%s' % (base_name, now.strftime("%Y%m%d%H%M%S"), extension)
 
+def get_html_title():
+    base_name = os.path.basename(args.file[0])
+    if base_name.find('.') > 0:
+        base_name = base_name[:base_name.find('.')]
+    return base_name.replace('_', ' ').replace('-', ' ').upper()
+
 def get_csv_output_filename_with_path():
     return get_filename_with_path(get_csv_output_filename(), output_folder)
 
@@ -585,7 +591,7 @@ if result and len(result) > 0:
 
         html_data = {}
 
-        for author in result.keys():
+        for author in sorted(result.keys(), key=str.lower):
             if not args.authors or author in args.authors or not top_contributors or author in top_contributors:
                 authors_pos[author] = len(authors_pos.keys()) + 1
                 if args.csv_commits:
@@ -769,7 +775,7 @@ if result and len(result) > 0:
         # Notice the use of trim_blocks, which greatly helps control whitespace.
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('chart.html')
-        html_data_values = html_data.values()
+        html_data_values = list(html_data.values())
 
         max_points_divide_factor = 1
         if args.max_points_html:
@@ -780,7 +786,18 @@ if result and len(result) > 0:
             if total_nb_points > args.max_points_html:
                 max_points_divide_factor = int(total_nb_points / args.max_points_html)
 
-        output_from_parsed_template = template.render(labels_and_data=html_data_values, generation_date=now.strftime(csv_date_format), repositories=sorted(repos_html, key=str.lower), max_points_divide_factor=max_points_divide_factor)
+        # Sort so that users appear in alphabetical order in the HTML.
+        total_values = html_data_values[len(html_data_values)-1]
+        html_data_values = html_data_values[:-1]
+        html_data_values = sorted(html_data_values, key=lambda k: k['label'].lower(), reverse=False)
+        # We want TOTAL to appear last.
+        html_data_values.append(total_values)
+
+        output_from_parsed_template = template.render(labels_and_data=html_data_values,
+                                                      generation_date=now.strftime(csv_date_format),
+                                                      repositories=sorted(repos_html, key=str.lower),
+                                                      max_points_divide_factor=max_points_divide_factor,
+                                                      title=get_html_title())
 
         # to save the results
         html_output_filename = get_html_output_filename_with_path()
