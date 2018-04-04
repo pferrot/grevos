@@ -592,7 +592,7 @@ if result and len(result) > 0:
         html_data = {}
 
         for author in sorted(result.keys(), key=str.lower):
-            if args.authors and author in args.authors:
+            if args.authors and author not in args.authors:
                 authors_hidden[author] = 1
             elif not args.authors or author in args.authors or not top_contributors or author in top_contributors:
                 authors_pos[author] = len(authors_pos.keys()) + 1
