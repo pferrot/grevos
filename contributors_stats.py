@@ -62,7 +62,7 @@ parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', 
 parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors, default: keep all.')
-#parser.add_argument('-mph', '--max_points_html', type=int, nargs='?', help='Maximum number of points in the HTML output. A graph with too many points will not offer a good user experience.')
+parser.add_argument('-mph', '--max_points_html', type=int, nargs='?', help='Maximum number of points in the HTML output. A graph with too many points will not offer a good user experience.')
 
 
 args = parser.parse_args()
@@ -96,10 +96,10 @@ if args.top_contributors != None:
     if args.top_contributors < 1:
         print ('number of top contributors must be a positive integer')
         exit(1)
-#if args.max_points_html != None:
-#    if args.max_points_html < 1:
-#        print ('max number of points in HTML must be a positive integer')
-#        exit(1)
+if args.max_points_html != None:
+    if args.max_points_html < 1:
+        print ('max number of points in HTML must be a positive integer')
+        exit(1)
 
 print ("Source file: %s" % args.file[0])
 print ("Output folder: %s" % output_folder)
@@ -769,7 +769,17 @@ if result and len(result) > 0:
         # Notice the use of trim_blocks, which greatly helps control whitespace.
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('chart.html')
-        output_from_parsed_template = template.render(labels_and_data=html_data.values(), generation_date=now.strftime(csv_date_format), repositories=sorted(repos_html, key=str.lower))
+        html_data_values = html_data.values()
+
+        max_points_divide_factor = 1
+        if args.max_points_html:
+            total_nb_points = 0
+            for hdv in html_data_values:
+                for h in hdv["data"]:
+                    total_nb_points = total_nb_points + len(h)
+            max_points_divide_factor = total_nb_points / args.max_points_html
+
+        output_from_parsed_template = template.render(labels_and_data=html_data_values, generation_date=now.strftime(csv_date_format), repositories=sorted(repos_html, key=str.lower), max_points_divide_factor=max_points_divide_factor)
 
         # to save the results
         html_output_filename = get_html_output_filename_with_path()

@@ -23,10 +23,12 @@ function doStuff() {
                     backgroundColor: 'rgba(0, 0, 0, 0.0)',
                     data: [
                       {% for d in ld.data -%}
+                      {% if loop.index == 1 or loop.index == ld.data|length or loop.index % max_points_divide_factor == 0 -%}
                       {
                         x: new Date({{ d.year }}, {{ d.month }}, {{ d.day }}, {{ d.hours }}, {{ d.minutes }}, {{ d.seconds }}),
                         y: {{ d.y }}
                       }{%- if loop.index < ld.data|length -%},{% endif %}
+                      {%- endif %}
                       {%- endfor %}
                     ]
                 }{%- if loop.index < labels_and_data|length -%},{% endif %}
