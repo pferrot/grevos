@@ -53,6 +53,20 @@ span.generatedSpan {
 
 var m_chart = undefined;
 
+var m_tooltipLabels = [];
+{% for ld in labels_and_data -%}
+m_tooltipLabels.push([]);
+{% for d in ld.data -%}
+{% if loop.index == 1 or loop.index == ld.data|length or loop.index % max_points_divide_factor == 0 %}
+var dict = {"sha": "{{ d.sha }}", "repo": "{{ d.repo }}", "owner": "{{ d.owner }}" };
+{% if d.author is defined -%}
+dict["author"] = "{{ d.author }}";
+{%- endif %}
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+{% endif %}
+{%- endfor %}
+{%- endfor %}
+
 function doStuff() {
   var ctx = document.getElementById('myChart').getContext('2d');
   var my_palette = palette('mpn65', {{ labels_and_data|length }});
@@ -86,6 +100,28 @@ function doStuff() {
 
       // Configuration options go here
       options: {
+        tooltips: {
+            footerFontStyle: "normal",
+            bodyFontSize: 14,
+            titleMarginBottom: 14,
+            footerMarginTop: 12,
+            callbacks: {
+              label: function(tooltipItem, data) {
+                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                  return [label, tooltipItem.yLabel];
+              },
+                footer: function(tooltipItem, data) {
+                  var item = m_tooltipLabels[tooltipItem[0].datasetIndex][tooltipItem[0].index];
+                  var result = [];
+                  if (item.author) {
+                    result.push("Author: " + item.author);  
+                  }
+                  result.push("Commit SHA: " + item.sha);
+                  result.push("Repository: " + item.owner + "/" + item.repo);
+                  return result;
+                }
+            }
+        },
         elements: {
           line: {
             tension: 0

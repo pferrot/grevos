@@ -682,6 +682,10 @@ if result and len(result) > 0:
             html_object["minutes"] = the_date.minute
             html_object["seconds"] = the_date.second
 
+            html_object["owner"] = one_result["owner"];
+            html_object["repo"] = one_result["repo"];
+            html_object["sha"] = one_result["sha"];
+
 
             if not the_author in authors_hidden and (not top_contributors or the_author in top_contributors):
                 # Add empty cells to add in the right column.
@@ -740,6 +744,11 @@ if result and len(result) > 0:
             html_object["minutes"] = the_date.minute
             html_object["seconds"] = the_date.second
 
+            html_object["owner"] = one_result["owner"];
+            html_object["repo"] = one_result["repo"];
+            html_object["sha"] = one_result["sha"];
+            html_object["author"] = the_author;
+
             if args.csv_commits:
                 row.append(total_nb_commits)
                 html_object["y"] = total_nb_commits
@@ -763,7 +772,6 @@ if result and len(result) > 0:
 
             # Show the repo this commit is comming from.
             row.append("%s/%s" % (one_result["owner"], one_result["repo"]))
-
             row.append("%s" % one_result["sha"])
 
             writer.writerow(row)
