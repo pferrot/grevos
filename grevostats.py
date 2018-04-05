@@ -15,10 +15,8 @@ from requests import get
 from jinja2 import Environment, FileSystemLoader
 
 
-print("GREVOSTATS")
-print("----------")
-print("GitHub Repositories Evolution Statistics")
-print("")
+print("GREVOS")
+print("------\n")
 
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
@@ -47,7 +45,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-parser = argparse.ArgumentParser(description='See how your GitHub repositories evolved and who contributed.')
+parser = argparse.ArgumentParser(description='Generate combined activity graphs for any number of repositories.')
 parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<commit_url_pattern>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
 parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help=argparse.SUPPRESS)
 parser.add_argument('-a', '--authors', type=str, nargs='*', help='Only outputs statistics for the specified authors (all authors by default).')

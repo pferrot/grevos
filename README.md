@@ -1,7 +1,7 @@
-# GREVOSTATS
-See how your GitHub repositories evolves and who contributed.
+# GREVOS
+GREVOS is a simple Python command line tool for generating graphs showing the **combined** activity of any number of GitHub repositories.
 
-GREVOSTATS is a simple Python command line tool for generating graphs showing the evolution of your GitHub repositories.
+GitHub activity graphs are nice, but large projects are often composed of more than one single git repository. GREVOS generates activity graphs for any number of repositories, thus allowing to see the pace of the entire project and who contributes.
 
 ## Features
 * HTML and CSV outputs.
@@ -37,12 +37,11 @@ GREVOSTATS is a simple Python command line tool for generating graphs showing th
 
 ## Usage
 ```
-patrices-air:grevostats patrice$ python3 grevostats.py -h
-GREVOSTATS
-----------
-GitHub Repositories Evolution Statistics
+patrices-air:grevos patrice$ python3 grevos.py -h
+GREVOS
+------
 
-usage: grevostats.py [-h] [-f FILE] [-a [AUTHORS [AUTHORS ...]]]
+usage: grevos.py [-h] [-f FILE] [-a [AUTHORS [AUTHORS ...]]]
                      [-o [OUTPUT_FOLDER]] [-c [CACHE_FOLDER]]
                      [-oc [OUTPUT_COMMITS]] [-oa [OUTPUT_ADDITIONS]]
                      [-od [OUTPUT_DELETIONS]] [-odi [OUTPUT_DIFFERENCES]]
@@ -54,7 +53,7 @@ usage: grevostats.py [-h] [-f FILE] [-a [AUTHORS [AUTHORS ...]]]
                      [-micd [MIN_COMMIT_DIFFERENCE]] [-tc [TOP_CONTRIBUTORS]]
                      [-mph [MAX_POINTS_HTML]]
 
-See how your GitHub repositories evolved and who contributed.
+Generate combined activity graphs for any number of repositories.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -136,7 +135,7 @@ https://,api.github.com,,spotify,styx,master,https://github.com/{{owner}}/{{repo
 Then run with the desired parameters, e.g.:
 
 ```
-python3 grevostats.py \
+python3 grevos.py \
 -oc no -oa no -od no -odi yes -ot no \
 -mph 1000 -macd 5000 -micd -5000 -tc 10 \
 -f spotify_\(luigi_and_stix\).csv
@@ -144,10 +143,9 @@ python3 grevostats.py \
 
 And then wait until all commits have been processed. Note that the first time you generate a graph for a given repository, it might take some time as the data must be retrieved from GitHub. Supsequent executions will be much faster thanks to the necessary data being cached locally.
 ```
-patrices-air:grevostats patrice$ python3 grevostats.py -oc no -oa no -od no -odi yes -ot no -mph 1000 -macd 5000 -micd -5000 -tc 10 -f spotify_\(luigi_and_stix\).csv
-GREVOSTATS
-----------
-GitHub Repositories Evolution Statistics
+patrices-air:grevos patrice$ python3 grevos.py -oc no -oa no -od no -odi yes -ot no -mph 1000 -macd 5000 -micd -5000 -tc 10 -f spotify_\(luigi_and_stix\).csv
+GREVOS
+------
 
 Source file: spotify_(luigi_and_stix).csv
 Output folder: output
@@ -200,6 +198,6 @@ Done.
 ```
 
 You can have a look at the generated files in the [docs](docs) folder.
-You can even play with the generated HTML <a href="http://patriceferrot.com/grevostats/spotify_(luigi_and_stix)_20180405152259.html">here</a> (screenshot below).
+You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405152259.html">here</a> (screenshot below).
 
 <img src="docs/spotify_(luigi_and_stix).png"/>
