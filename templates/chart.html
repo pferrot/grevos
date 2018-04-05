@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>TEST REPOS TRAEFIK</title>
+<title>{{ title }} | GREVOSTATS</title>
 <style>
 body {font-family: Arial, Helvetica, sans-serif;}
 .btn {
@@ -21,22 +21,32 @@ body {font-family: Arial, Helvetica, sans-serif;}
   text-decoration: none;
 }
 
-div.topDiv {
+div.topDiv, div.bottomDiv {
   width: 100%;
   position: relative;
+}
+div.footerDiv {
+  clear: both;
 }
 div.toggleButtonDiv {
   width: 30%;
   float: right;
   margin-top: 10px;
 }
-
 div.titleDiv {
   width: 50%;
   float: left;
   padding: 10px;
   font-size: 23px;
   font-weight: bold;
+}
+div.repoDiv {
+  width: 50%;
+  float: left;
+}
+div.authorsHiddenDiv {
+  width: 50%;
+  float: left;
 }
 
 span.generatedSpan {
@@ -195,13 +205,28 @@ window.onload = doStuff;
 
 <br/><br/>
 
+<div class="bottomDiv">
+<div class="repoDiv">
 Repositories:
 <ul>
 {% for repo in repositories -%}
-<li>{{ repo }}</li>
+<li>{% filter escape %}{{ repo }}{% endfilter %}</li>
 {%- endfor %}
 </ul>
+</div>
+<div class="authorsHiddenDiv">
+{% if authors_hidden|length > 0 -%}
+Authors not displayed:
+<ul>
+{% for author_hidden in authors_hidden -%}
+<li>{% filter escape %}{{ author_hidden }}{% endfilter %}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+</div>
 <br/>
+<div class="footerDiv">
 <span class="generatedSpan">Generated on {{ generation_date }} by <a href="https://github.com/pferrot/contributors-stats" target="_blank">contributors-stats</a></span>
+</div>
 </body>
 </html>

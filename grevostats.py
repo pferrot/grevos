@@ -629,6 +629,8 @@ if result and len(result) > 0:
                     html_data["%s (total)" % author] = {}
                     html_data["%s (total)" % author]["data"] = []
                     html_data["%s (total)" % author]["label"] = "%s (total)" % author
+            else:
+                authors_hidden[author] = 1
 
 
 
@@ -836,6 +838,7 @@ if result and len(result) > 0:
         output_from_parsed_template = template.render(labels_and_data=html_data_values,
                                                       generation_date=now.strftime(csv_date_format),
                                                       repositories=sorted(repos_html, key=str.lower),
+                                                      authors_hidden=sorted(authors_hidden.keys(), key=str.lower),
                                                       max_points_divide_factor=max_points_divide_factor,
                                                       title=get_html_title())
 

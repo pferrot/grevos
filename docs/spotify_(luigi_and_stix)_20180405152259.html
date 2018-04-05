@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>TEST REPOS TRAEFIK</title>
+<title>SPOTIFY (LUIGI AND STIX) | GREVOSTATS</title>
 <style>
 body {font-family: Arial, Helvetica, sans-serif;}
 .btn {
@@ -21,22 +21,32 @@ body {font-family: Arial, Helvetica, sans-serif;}
   text-decoration: none;
 }
 
-div.topDiv {
+div.topDiv, div.bottomDiv {
   width: 100%;
   position: relative;
+}
+div.footerDiv {
+  clear: both;
 }
 div.toggleButtonDiv {
   width: 30%;
   float: right;
   margin-top: 10px;
 }
-
 div.titleDiv {
   width: 50%;
   float: left;
   padding: 10px;
   font-size: 23px;
   font-weight: bold;
+}
+div.repoDiv {
+  width: 50%;
+  float: left;
+}
+div.authorsHiddenDiv {
+  width: 50%;
+  float: left;
 }
 
 span.generatedSpan {
@@ -151,10 +161,10 @@ dict["commit_url"] = "https://github.com/spotify/styx/commit/eef4800b59b1a276843
 dict["plus_minus"] = "0";
 m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
 
-var dict = {"sha": "f7b3c0b14854f336cac652bfb95036912b028959", "repo": "styx", "owner": "spotify" };
+var dict = {"sha": "670e00e809dd746baa629ce9c9baab7e512c06ce", "repo": "luigi", "owner": "spotify" };
 
-dict["commit_url"] = "https://github.com/spotify/styx/commit/f7b3c0b14854f336cac652bfb95036912b028959";
-dict["plus_minus"] = "0";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/670e00e809dd746baa629ce9c9baab7e512c06ce";
+dict["plus_minus"] = "1";
 m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
 m_tooltipLabels.push([]);
 
@@ -612,6 +622,24 @@ dict["commit_url"] = "https://github.com/spotify/styx/commit/34985752b2c9b3def1b
 dict["plus_minus"] = "0";
 m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
 
+var dict = {"sha": "34985752b2c9b3def1b9b99e34f911946dbb237a", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/34985752b2c9b3def1b9b99e34f911946dbb237a";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "60e21718605c1599e3f7244e428ce4cae7e61fae", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/60e21718605c1599e3f7244e428ce4cae7e61fae";
+dict["plus_minus"] = "1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "670e00e809dd746baa629ce9c9baab7e512c06ce", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/670e00e809dd746baa629ce9c9baab7e512c06ce";
+dict["plus_minus"] = "1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
 
 function doStuff() {
   var ctx = document.getElementById('myChart').getContext('2d');
@@ -715,8 +743,8 @@ function doStuff() {
                         x: new Date(2018, 2, 27, 14, 51, 33),
                         y: 1431
                       },{
-                        x: new Date(2018, 2, 27, 14, 57, 48),
-                        y: 1431
+                        x: new Date(2018, 3, 5, 12, 24, 50),
+                        y: 1433
                       }
                     ]
                 },{
@@ -982,6 +1010,15 @@ function doStuff() {
                       },{
                         x: new Date(2018, 2, 27, 15, 38, 19),
                         y: 11044
+                      },{
+                        x: new Date(2018, 2, 27, 15, 38, 19),
+                        y: 11044
+                      },{
+                        x: new Date(2018, 3, 4, 20, 12, 38),
+                        y: 11045
+                      },{
+                        x: new Date(2018, 3, 5, 12, 24, 50),
+                        y: 11046
                       }
                     ]
                 }
@@ -1079,11 +1116,22 @@ SPOTIFY (LUIGI AND STIX)
 
 <br/><br/>
 
+<div class="bottomDiv">
+<div class="repoDiv">
 Repositories:
 <ul>
 <li>spotify/luigi</li><li>spotify/styx</li>
 </ul>
+</div>
+<div class="authorsHiddenDiv">
+Authors not displayed:
+<ul>
+<li>&lt;unknown&gt;</li><li>bergman</li><li>danielnorberg</li><li>fabriziodemaria</li><li>jamesmcm</li><li>jfeala</li><li>NatashaL</li><li>nathantsoi</li><li>pkaleta</li><li>riga</li><li>spotify-helios-ci-agent</li><li>ulzha</li><li>Zatine</li>
+</ul>
+</div>
 <br/>
-<span class="generatedSpan">Generated on 04/05/2018 13:35:17 by <a href="https://github.com/pferrot/contributors-stats" target="_blank">contributors-stats</a></span>
+<div class="footerDiv">
+<span class="generatedSpan">Generated on 04/05/2018 15:22:59 by <a href="https://github.com/pferrot/contributors-stats" target="_blank">contributors-stats</a></span>
+</div>
 </body>
 </html>

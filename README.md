@@ -155,35 +155,13 @@ Cache folder: cache
 Nb repos to process: 2
 
 Processing: https://api.github.com/repos/spotify/luigi/commits?sha=master&since=2018-01-01T00:00:00Z (repo 1 / 2)
-    No cache (file does not exist: cache/0b20038a8d70ef7160c71ad81529d737b5949d60)
-    Nb commits processed so far: 20 (latest date: 01/19/2018 23:07:33)
-    Commit is before 'since' date, so ignoring: a979e45cbc302f6bbab2225539fef77a9824d444
-    Commit is before 'since' date, so ignoring: 08224e26924aee6255a536bcca1a3ecb62f007af
-    Done processing commits (total nb commits processed: 35)
+    Cache found (file: cache/0b20038a8d70ef7160c71ad81529d737b5949d60)
+    Recovered 37 commits from cache
+    Done processing commits (total nb commits processed: 37)
 Processing: https://api.github.com/repos/spotify/styx/commits?sha=master&since=2018-01-01T00:00:00Z (repo 2 / 2)
-    No cache (file does not exist: cache/f8e706d88f3e8cb3bf278e1823a2fd4a71a26e7c)
-    Nb commits processed so far: 20 (latest date: 03/26/2018 12:53:29)
-    Nb commits processed so far: 40 (latest date: 03/21/2018 14:59:58)
-    Nb commits processed so far: 60 (latest date: 03/14/2018 12:37:21)
-    Nb commits processed so far: 80 (latest date: 02/12/2018 12:27:54)
-    Nb commits processed so far: 100 (latest date: 03/13/2018 08:27:29)
-    Nb commits processed so far: 120 (latest date: 02/21/2018 09:45:00)
-    Nb commits processed so far: 140 (latest date: 02/28/2018 09:02:26)
-    Nb commits processed so far: 160 (latest date: 02/23/2018 12:01:40)
-    Nb commits processed so far: 180 (latest date: 02/20/2018 13:45:18)
-    Nb commits processed so far: 200 (latest date: 02/16/2018 15:59:41)
-    Nb commits processed so far: 220 (latest date: 02/13/2018 12:46:11)
-    Nb commits processed so far: 240 (latest date: 01/30/2018 13:27:45)
-    Nb commits processed so far: 260 (latest date: 01/25/2018 15:07:57)
-    Commit is before 'since' date, so ignoring: 0b7972538492f96f3cf0c0c4c5039f85d2ed797b
-    Nb commits processed so far: 280 (latest date: 01/25/2018 02:55:26)
-    Nb commits processed so far: 300 (latest date: 01/22/2018 04:30:31)
-    Commit is before 'since' date, so ignoring: 55b63020091394237a66f3bfbffb4a9d28671ea2
-    Nb commits processed so far: 320 (latest date: 01/20/2018 12:24:56)
-    Nb commits processed so far: 340 (latest date: 01/15/2018 11:53:31)
-    Commit is before 'since' date, so ignoring: 292c145e638f2c20f0926a4c6b9b97fe19436b17
-    Commit is before 'since' date, so ignoring: d97025afd573e3037333f35d67c66abfb0133ca2
-    Done processing commits (total nb commits processed: 357)
+    Cache found (file: cache/f8e706d88f3e8cb3bf278e1823a2fd4a71a26e7c)
+    Recovered 371 commits from cache
+    Done processing commits (total nb commits processed: 372)
 Processing '<unknown>' user data
     Author could not be found (email: ben.sully@dwp.gsi.gov.uk, name: Ben Sully)
         Continuing as user '<unknown>' is allowed
@@ -200,14 +178,28 @@ Calculating top contributors
         Tarrasch
         tmattio
         yonromai
-Output file generated: output/spotify_(luigi_and_stix)_20180405133517.csv
-Output file generated: output/spotify_(luigi_and_stix)_20180405133517.html
+Output file generated: output/spotify_(luigi_and_stix)_20180405152259.csv
+Output file generated: output/spotify_(luigi_and_stix)_20180405152259.html
     Total nb authors: 23
+    Stats for the following authors are not included:
+        <unknown>
+        bergman
+        danielnorberg
+        fabriziodemaria
+        jamesmcm
+        jfeala
+        NatashaL
+        nathantsoi
+        pkaleta
+        riga
+        spotify-helios-ci-agent
+        ulzha
+        Zatine
 
 Done.
 ```
 
 You can have a look at the generated files in the [docs](docs) folder.
-You can even play with the generated HTML <a href="http://patriceferrot.com/grevostats/spotify_(luigi_and_stix)_20180405133517.html">here</a> (screenshot below).
+You can even play with the generated HTML <a href="http://patriceferrot.com/grevostats/spotify_(luigi_and_stix)_20180405152259.html">here</a> (screenshot below).
 
-<img src="docs/spotify_(luigi_and_stix)_20180405133517.png"/>
+<img src="docs/spotify_(luigi_and_stix).png"/>
