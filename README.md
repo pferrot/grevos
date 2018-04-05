@@ -200,4 +200,4 @@ Done.
 You can have a look at the generated files in the [docs](docs) folder.
 You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405152259.html">here</a> (screenshot below).
 
-<img src="docs/spotify_(luigi_and_stix).png"/>
+<a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405152259.html"><img src="docs/spotify_(luigi_and_stix).png"/></a>
