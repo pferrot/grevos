@@ -15,8 +15,8 @@ from requests import get
 from jinja2 import Environment, FileSystemLoader
 
 
-print ("Contributors stats")
-print ("------------------\n")
+print ("GitHub Contributors stats")
+print ("-------------------------\n")
 
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
@@ -47,7 +47,7 @@ def str2bool(v):
 
 parser = argparse.ArgumentParser(description='Collect contributors statistics on specified GitHub repositories.')
 parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
-parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='Ignore commits with one of those files added.')
+#parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='Ignore commits with one of those files added.')
 parser.add_argument('-a', '--authors', type=str, nargs='*', help='Only outputs statistics for the specified authors (all authors by default).')
 parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='Folder where the generated CSV files are stored, default: \'%s\'.' % output_folder)
 parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='Folder where cache files are stored, default: \'%s\'.' % cache_folder)
