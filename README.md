@@ -127,15 +127,24 @@ optional arguments:
 
 ## Example
 
-Source file, `spotify_(luigi_and_stix).csv` (`XXXXXXXXXXXXXXXXXXXXX` must be replaced with [your own personal API token](https://blog.github.com/2013-05-16-personal-api-tokens/)):
+Source file listing the repositories, `spotify_(luigi_and_stix).csv` (`XXXXXXXXXXXXXXXXXXXXX` must be replaced with [your own personal API token](https://blog.github.com/2013-05-16-personal-api-tokens/)):
 ```
 https://,api.github.com,,spotify,luigi,master,https://github.com/{{owner}}/{{repository}}/commit/{{commit_sha}},2018-01-01T00:00:00Z,XXXXXXXXXXXXXXXXXXXXX
 https://,api.github.com,,spotify,styx,master,https://github.com/{{owner}}/{{repository}}/commit/{{commit_sha}},2018-01-01T00:00:00Z,XXXXXXXXXXXXXXXXXXXXX
 ```
 
 Then run with the desired parameters, e.g.:
+
 ```
-patrices-air:grevostats patrice$ python3 grevostats.py -oc no -oa no -od no -odi yes -ot no -mph 1000 -macd 5000 -micd -5000 -tc 10 -f spotify.csv
+python3 grevostats.py \
+-oc no -oa no -od no -odi yes -ot no \
+-mph 1000 -macd 5000 -micd -5000 -tc 10 \
+-f spotify_\(luigi_and_stix\).csv
+```
+
+And then wait until all commits have been processed. Note that the first time you generate a graph for a given repository, it might take some time as the data must be retrieved from GitHub. Supsequent executions will be much faster thanks to the necessary data being cached locally.
+```
+patrices-air:grevostats patrice$ python3 grevostats.py -oc no -oa no -od no -odi yes -ot no -mph 1000 -macd 5000 -micd -5000 -tc 10 -f spotify_\(luigi_and_stix\).csv
 GREVOSTATS
 ----------
 GitHub Repositories Evolution Statistics
@@ -199,3 +208,6 @@ Done.
 ```
 
 You can have a look at the generated files in the [docs](docs) folder.
+You can even play with the generated HTML <a href="http://patriceferrot.com/grevostats/spotify_(luigi_and_stix)_20180405133517.html">here</a> (screenshot below).
+
+<img src="docs/spotify_(luigi_and_stix)_20180405133517.png"/>
