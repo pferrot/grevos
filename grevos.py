@@ -555,8 +555,8 @@ commits_to_ignore = []
 commits_url_patterns = {}
 for idx, row in enumerate(to_process, 1):
     # Commits to ignore.
-    if len(row) == 9:
-         commits_to_ignore.extend(row[8].split(commits_to_ignore_separator))
+    if len(row) == 10:
+         commits_to_ignore.extend(row[9].split(commits_to_ignore_separator))
     owner = row[3]
     repo = row[4]
     commit_url_pattern = row[6]
