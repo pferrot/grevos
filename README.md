@@ -198,4 +198,4 @@ Output file generated: output/spotify_(luigi_and_stix)_20180405133517.html
 Done.
 ```
 
-You can have a look at the generated files in the [doc](doc) folder.
+You can have a look at the generated files in the [docs](docs) folder.
