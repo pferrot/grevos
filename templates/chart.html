@@ -65,6 +65,9 @@ dict["author"] = "{{ d.author }}";
 {% if d.commit_url is defined -%}
 dict["commit_url"] = "{{ d.commit_url }}";
 {%- endif %}
+{% if d.plus_minus is defined -%}
+dict["plus_minus"] = "{{ d.plus_minus }}";
+{%- endif %}
 m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
 {% endif %}
 {%- endfor %}
@@ -118,6 +121,14 @@ function doStuff() {
                   var result = [];
                   if (item.author) {
                     result.push("Author: " + item.author);
+                  }
+                  if (item.plus_minus != undefined) {
+                    var r = "";
+                    if (item.plus_minus > 0) {
+                      r += "+";
+                    }
+                    r += item.plus_minus
+                    result.push(r);
                   }
                   result.push("Commit SHA: " + item.sha);
                   result.push("Repository: " + item.owner + "/" + item.repo);

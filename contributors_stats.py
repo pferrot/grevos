@@ -9,6 +9,7 @@ import csv
 import datetime
 import os.path
 import hashlib
+import copy
 
 from requests import get
 from jinja2 import Environment, FileSystemLoader
@@ -712,24 +713,34 @@ if result and len(result) > 0:
                 #row.append(one_result["stats"]["total"])
                 if args.csv_commits:
                     row.append(one_result["total_stats_author"]["nb_commits"])
-                    html_object["y"] = one_result["total_stats_author"]["nb_commits"]
-                    html_data["%s (commits)" % the_author]["data"].append(html_object)
+                    h = copy.deepcopy(html_object)
+                    h["y"] = one_result["total_stats_author"]["nb_commits"]
+                    h["plus_minus"] = one_result["stats"]["nb_commits"]
+                    html_data["%s (commits)" % the_author]["data"].append(h)
                 if args.csv_additions:
                     row.append(one_result["total_stats_author"]["additions"])
-                    html_object["y"] = one_result["total_stats_author"]["additions"]
-                    html_data["%s (additions)" % the_author]["data"].append(html_object)
+                    h = copy.deepcopy(html_object)
+                    h["y"] = one_result["total_stats_author"]["additions"]
+                    h["plus_minus"] = one_result["stats"]["additions"]
+                    html_data["%s (additions)" % the_author]["data"].append(h)
                 if args.csv_deletions:
                     row.append(one_result["total_stats_author"]["deletions"])
-                    html_object["y"] = one_result["total_stats_author"]["deletions"]
-                    html_data["%s (deletions)" % the_author]["data"].append(html_object)
+                    h = copy.deepcopy(html_object)
+                    h["y"] = one_result["total_stats_author"]["deletions"]
+                    h["plus_minus"] = one_result["stats"]["deletions"]
+                    html_data["%s (deletions)" % the_author]["data"].append(h)
                 if args.csv_differences:
                     row.append(one_result["total_stats_author"]["difference"])
-                    html_object["y"] = one_result["total_stats_author"]["difference"]
-                    html_data["%s (difference)" % the_author]["data"].append(html_object)
+                    h = copy.deepcopy(html_object)
+                    h["y"] = one_result["total_stats_author"]["difference"]
+                    h["plus_minus"] = one_result["stats"]["difference"]
+                    html_data["%s (difference)" % the_author]["data"].append(h)
                 if args.csv_totals:
                     row.append(one_result["total_stats_author"]["total"])
-                    html_object["y"] = one_result["total_stats_author"]["total"]
-                    html_data["%s (total)" % the_author]["data"].append(html_object)
+                    h = copy.deepcopy(html_object)
+                    h["y"] = one_result["total_stats_author"]["total"]
+                    h["plus_minus"] = one_result["stats"]["total"]
+                    html_data["%s (total)" % the_author]["data"].append(h)
 
                 for x in range(authors_pos[the_author], len(authors_pos)):
                     for y in range(0, nb_fields_per_author):
@@ -748,40 +759,41 @@ if result and len(result) > 0:
             total_difference = total_difference + one_result["stats"]["difference"]
             total_total = total_total + one_result["stats"]["total"]
 
-            html_object = {}
-            html_object["year"] = the_date.year
-            # -1 because months are 0-indexed in JavaScript.
-            html_object["month"] = the_date.month - 1
-            html_object["day"] = the_date.day
-            html_object["hours"] = the_date.hour
-            html_object["minutes"] = the_date.minute
-            html_object["seconds"] = the_date.second
 
-            html_object["owner"] = one_result["owner"];
-            html_object["repo"] = one_result["repo"];
-            html_object["sha"] = one_result["sha"];
+            # This will only add the 'autor' to TOTAL since we create deep
+            # copies of html_object.
             html_object["author"] = the_author;
 
             if args.csv_commits:
                 row.append(total_nb_commits)
-                html_object["y"] = total_nb_commits
-                html_data["%s (commits)" % "TOTAL"]["data"].append(html_object)
+                h = copy.deepcopy(html_object)
+                h["y"] = total_nb_commits
+                h["plus_minus"] = one_result["stats"]["nb_commits"]
+                html_data["%s (commits)" % "TOTAL"]["data"].append(h)
             if args.csv_additions:
                 row.append(total_additions)
-                html_object["y"] = total_additions
-                html_data["%s (additions)" % "TOTAL"]["data"].append(html_object)
+                h = copy.deepcopy(html_object)
+                h["y"] = total_additions
+                h["plus_minus"] = one_result["stats"]["additions"]
+                html_data["%s (additions)" % "TOTAL"]["data"].append(h)
             if args.csv_deletions:
                 row.append(total_deletions)
-                html_object["y"] = total_deletions
-                html_data["%s (deletions)" % "TOTAL"]["data"].append(html_object)
+                h = copy.deepcopy(html_object)
+                h["y"] = total_deletions
+                h["plus_minus"] = one_result["stats"]["deletions"]
+                html_data["%s (deletions)" % "TOTAL"]["data"].append(h)
             if args.csv_differences:
                 row.append(total_difference)
-                html_object["y"] = total_difference
-                html_data["%s (difference)" % "TOTAL"]["data"].append(html_object)
+                h = copy.deepcopy(html_object)
+                h["y"] = total_difference
+                h["plus_minus"] = one_result["stats"]["difference"]
+                html_data["%s (difference)" % "TOTAL"]["data"].append(h)
             if args.csv_totals:
                 row.append(total_total)
-                html_object["y"] = total_total
-                html_data["%s (total)" % "TOTAL"]["data"].append(html_object)
+                h = copy.deepcopy(html_object)
+                h["y"] = total_total
+                h["plus_minus"] = one_result["stats"]["total"]
+                html_data["%s (total)" % "TOTAL"]["data"].append(h)
 
             # Show the repo this commit is comming from.
             row.append(owner_repo)
@@ -812,11 +824,12 @@ if result and len(result) > 0:
                 max_points_divide_factor = int(total_nb_points / args.max_points_html)
 
         # Sort so that users appear in alphabetical order in the HTML.
-        total_values = html_data_values[len(html_data_values)-1]
-        html_data_values = html_data_values[:-1]
+        total_values = html_data_values[-nb_fields_per_author:]
+        total_values = sorted(total_values, key=lambda k: k['label'].lower(), reverse=False)
+        html_data_values = html_data_values[:-nb_fields_per_author]
         html_data_values = sorted(html_data_values, key=lambda k: k['label'].lower(), reverse=False)
         # We want TOTAL to appear last.
-        html_data_values.append(total_values)
+        html_data_values.extend(total_values)
 
         output_from_parsed_template = template.render(labels_and_data=html_data_values,
                                                       generation_date=now.strftime(csv_date_format),
