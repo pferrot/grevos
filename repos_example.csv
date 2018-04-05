@@ -1,2 +1,2 @@
-https://,api.github.com,/api/v3,org1,repo1,master,2018-03-01T00:00:00Z,XXXXXXX
-https://,api.github.com,/api/v3,org1,repo2,master,2018-03-01T00:00:00Z,XXXXXXX
+https://,api.github.com,/api/v3,org1,repo1,master,https://github.com/{{owner}}/{{repository}}/commit/{{commit_sha}},2018-03-01T00:00:00Z,XXXXXXX
+https://,api.github.com,/api/v3,org1,repo2,master,https://github.com/{{owner}}/{{repository}}/commit/{{commit_sha}},2018-03-01T00:00:00Z,XXXXXXX

@@ -281,7 +281,7 @@ def load_cache(url):
 
 
 
-def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, index_repo, total_nb_repos):
+def get_rep_stats(scheme, host, base_path, owner, repo, branch, commit_url_pattern, since, git_token, index_repo, total_nb_repos):
     next_url = "%s%s%s/repos/%s/%s/commits?sha=%s%s" % (scheme, host, base_path, owner, repo, branch, "&since=%s" % since if since else "")
     cache_url = next_url
     print ("Processing: %s (%s)" % (next_url, "repo %d / %d" % (index_repo, total_nb_repos)))
@@ -538,7 +538,7 @@ to_process = []
 repos_html = []
 csv_reader = csv.reader(open(args.file[0], newline=''), delimiter=',', quotechar='|')
 for row in csv_reader:
-    if len(row) < 8 or len(row) > 9:
+    if len(row) < 9 or len(row) > 10:
         print ('wrong file format: %s (line: %s)' % (args.file[0], ",".join(row)))
         exit(1)
     repos_html.append("%s/%s" % (row[3], row[4]))
@@ -551,11 +551,17 @@ if len(to_process) == 0:
 print("Nb repos to process: %d\n" % len(to_process))
 
 commits_to_ignore = []
+commits_url_patterns = {}
 for idx, row in enumerate(to_process, 1):
     # Commits to ignore.
     if len(row) == 9:
          commits_to_ignore.extend(row[8].split(commits_to_ignore_separator))
-    a = get_rep_stats(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], idx, len(to_process))
+    owner = row[3]
+    repo = row[4]
+    commit_url_pattern = row[6]
+    a = get_rep_stats(row[0], row[1], row[2], owner, repo, row[5], row[6], row[7], row[8], idx, len(to_process))
+    if commit_url_pattern:
+        commits_url_patterns["%s/%s" % (owner, repo)] = commit_url_pattern
     if a == None:
         exit(1)
     result = combine_results(result, a)
@@ -658,6 +664,7 @@ if result and len(result) > 0:
 
         row.append("Repository")
         row.append("Commit SHA")
+        row.append("Commit URL")
 
         writer.writerow(row)
 
@@ -682,9 +689,15 @@ if result and len(result) > 0:
             html_object["minutes"] = the_date.minute
             html_object["seconds"] = the_date.second
 
-            html_object["owner"] = one_result["owner"];
-            html_object["repo"] = one_result["repo"];
-            html_object["sha"] = one_result["sha"];
+            html_object["owner"] = one_result["owner"]
+            html_object["repo"] = one_result["repo"]
+            html_object["sha"] = one_result["sha"]
+
+            owner_repo = "%s/%s" % (one_result["owner"], one_result["repo"])
+            commit_url = None
+            if owner_repo in commits_url_patterns:
+                commit_url = commits_url_patterns[owner_repo].replace("{{owner}}", one_result["owner"]).replace("{{repository}}", one_result["repo"]).replace("{{commit_sha}}", one_result["sha"])
+                html_object["commit_url"] = commit_url
 
 
             if not the_author in authors_hidden and (not top_contributors or the_author in top_contributors):
@@ -771,8 +784,13 @@ if result and len(result) > 0:
                 html_data["%s (total)" % "TOTAL"]["data"].append(html_object)
 
             # Show the repo this commit is comming from.
-            row.append("%s/%s" % (one_result["owner"], one_result["repo"]))
+            row.append(owner_repo)
             row.append("%s" % one_result["sha"])
+            if commit_url:
+                row.append("%s" % commit_url)
+                html_object["commit_url"] = commit_url
+            else:
+                row.append("")
 
             writer.writerow(row)
 
