@@ -715,7 +715,7 @@ if result and len(result) > 0:
                     row.append(one_result["total_stats_author"]["nb_commits"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["nb_commits"]
-                    h["plus_minus"] = one_result["stats"]["nb_commits"]
+                    h["plus_minus"] = 1
                     html_data["%s (commits)" % the_author]["data"].append(h)
                 if args.csv_additions:
                     row.append(one_result["total_stats_author"]["additions"])
@@ -768,7 +768,7 @@ if result and len(result) > 0:
                 row.append(total_nb_commits)
                 h = copy.deepcopy(html_object)
                 h["y"] = total_nb_commits
-                h["plus_minus"] = one_result["stats"]["nb_commits"]
+                h["plus_minus"] = 1
                 html_data["%s (commits)" % "TOTAL"]["data"].append(h)
             if args.csv_additions:
                 row.append(total_additions)
