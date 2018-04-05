@@ -1,0 +1,1089 @@
+<html>
+<head>
+<title>TEST REPOS TRAEFIK</title>
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+.btn {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 12px;
+  background: #3498db;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+  cursor: hand;
+}
+
+.btn:hover {
+  background: #3cb0fd;
+  text-decoration: none;
+}
+
+div.topDiv {
+  width: 100%;
+  position: relative;
+}
+div.toggleButtonDiv {
+  width: 30%;
+  float: right;
+  margin-top: 10px;
+}
+
+div.titleDiv {
+  width: 50%;
+  float: left;
+  padding: 10px;
+  font-size: 23px;
+  font-weight: bold;
+}
+
+span.generatedSpan {
+  font-size: 12px;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.0/moment-with-locales.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<!-- https://github.com/google/palette.js -->
+<script type="text/javascript">
+"use strict";var palette=function(){var f=Array.prototype,e=function(e,d,c){return f.slice.apply(e,f.slice.call(arguments,1))},d=1e9,c=function(f,d,a,b){if(0==(d|=0))return[];if("function"!=typeof f){var t=c.listSchemes(f,d);if(!t.length)return null;f=t[(a||0)%t.length]}var n=e(arguments,2);return n[0]=d,f.apply(f,n)};c.Scheme=function(f,a){var b={},t=0,n=d,r=function(f,d){if(!(f|=0))return[];var a=f;if((f=Math.abs(f))<=t){for(var i=Math.max(f,n);!(i in b);++i);var l=b[i];if(i>f){if(!("shrinking_takes_head"in l?l.shrinking_takes_head:r.shrinking_takes_head))return c.generate(function(f){return l[Math.round(f)]},a,0,l.length-1);l=l.slice(0,f),i=f}return l=l.slice(),a<0&&l.reverse(),l}return r.color_func?c.generate(function(){if(arguments.length<=1)return r.color_func.bind(r);var f=e(arguments);return function(e){return f[0]=e,r.color_func.apply(r,f)}}.apply(r,arguments),a,0,1,r.color_func_cyclic):null};return r.scheme_name=f,r.groups=a?"string"==typeof a?[a]:a:[],r.max=0,r.cbf_max=d,r.addPalette=function(f,e){var d=f.length;d&&(b[d]=f,n=Math.min(n,d),t=Math.max(t,d),r.max=Math.max(r.max,d),e||1==d||(r.cbf_max=Math.min(r.cbf_max,d-1)))},r.addPalettes=function(f,e,d){e=e||f.length;for(var c=0;c<e;++c)c in f&&r.addPalette(f[c],!0);r.cbf_max=Math.min(r.cbf_max,d||1)},r.shrinkByTakingHead=function(f,e){void 0!==e?e in b&&(b[e].shrinking_takes_head=!!f):r.shrinking_takes_head=!!f},r.setColorFunction=function(f,e,c){r.color_func=f,r.color_func_cyclic=!!c,r.max=d,e||r.cbf_max!==d||(r.cbf_max=1)},r.color=function(f,e){return r.color_func?r.color_func.apply(this,arguments):null},r},c.Scheme.fromPalettes=function(f,d,a,b,t){var n=c.Scheme(f,d);return n.addPalettes.apply(n,e(arguments,2)),n},c.Scheme.withColorFunction=function(f,d,a,b,t){var n=c.Scheme(f,d);return n.setColorFunction.apply(n,e(arguments,2)),n};var a={};c.register=function(f){a["n-"+f.scheme_name]=[f],f.groups.forEach(function(e){(a["g-"+e]=a["g-"+e]||[]).push(f)}),(a["g-all"]=a["g-all"]||[]).push(f)},c.listSchemes=function(f,e){e?e<0&&(e=-e):e=2;var d=[];return("string"==typeof f?[f]:f).forEach(function(f){var c="-cbf"===f.substring(f.length-4);c&&(f=f.substring(0,f.length-4));for(var b,t=a["g-"+f]||a["n-"+f]||[],n=0;b=t[n];++n)(c?b.cbf:b.max)>=e&&d.push(b)}),d.sort(function(f,e){return f.scheme_name>=e.scheme_name?f.scheme_name>e.scheme_name?1:0:-1}),d},c.generate=function(f,e,d,c,a){if(Math.abs(e)<1)return[];if(d=void 0===d?0:d,c=void 0===c?1:c,Math.abs(e)<2)return[f(d)];for(var b=Math.abs(e),t=d,n=[],r=(c-d)/(a?b:b-1);--b>=0;t+=r)n.push(f(t));return e<0&&n.reverse(),n};var b=function(f){return f>0?f<1?f:1:0};return c.rgbColor=function(f,e,d){return[f,e,d].map(function(f){return 1==(f=Number(Math.round(255*b(f))).toString(16)).length?"0"+f:f}).join("")},c.linearRgbColor=function(f,e,d){return[f,e,d].map(function(f){return(f=b(f))<=.0031308?f*=12.92:f=1.055*Math.pow(f,1/2.4)-.055,1==(f=Number(Math.round(255*f)).toString(16)).length?"0"+f:f}).join("")},c.hsvColor=function(f,e,d){f*=6;var a=void 0===e?1:b(e),t=void 0===d?1:b(d),n=t*(1-a*Math.abs(f%2-1)),r=t*(1-a);switch(Math.floor(f)%6){case 0:return c.rgbColor(t,n,r);case 1:return c.rgbColor(n,t,r);case 2:return c.rgbColor(r,t,n);case 3:return c.rgbColor(r,n,t);case 4:return c.rgbColor(n,r,t);default:return c.rgbColor(t,r,n)}},c.register(c.Scheme.withColorFunction("rainbow","qualitative",c.hsvColor,!1,!0)),c}();palette.ColorFunction,palette.Palette,palette.PalettesList,palette.SchemeType,function(){var f=palette.Scheme.fromPalettes("mpn65","qualitative",[["ff0029","377eb8","66a61e","984ea3","00d2d5","ff7f00","af8d00","7f80cd","b3e900","c42e60","a65628","f781bf","8dd3c7","bebada","fb8072","80b1d3","fdb462","fccde5","bc80bd","ffed6f","c4eaff","cf8c00","1b9e77","d95f02","e7298a","e6ab02","a6761d","0097ff","00d067","000000","252525","525252","737373","969696","bdbdbd","f43600","4ba93b","5779bb","927acc","97ee3f","bf3947","9f5b00","f48758","8caed6","f2b94f","eff26e","e43872","d9b100","9d7a00","698cff","d9d9d9","00d27e","d06800","009f82","c49200","cbe8ff","fecddf","c27eb6","8cd2ce","c4b8d9","f883b0","a49100","f48800","27d0df","a04a9b"]]);f.shrinkByTakingHead(!0),palette.register(f)}(),function(){var f=palette.rgbColor,e=function(f,e){for(var d=arguments.length-1,c=arguments[d];d>1;)c=c*f+arguments[--d];return c},d=function(f){var d=e(Math.abs(f),1,.278393,.230389,972e-6,.078108);return d*=d,d=1-1/(d*=d),f<0?-d:d};palette.register(palette.Scheme.fromPalettes("tol","qualitative",[["4477aa"],["4477aa","cc6677"],["4477aa","ddcc77","cc6677"],["4477aa","117733","ddcc77","cc6677"],["332288","88ccee","117733","ddcc77","cc6677"],["332288","88ccee","117733","ddcc77","cc6677","aa4499"],["332288","88ccee","44aa99","117733","ddcc77","cc6677","aa4499"],["332288","88ccee","44aa99","117733","999933","ddcc77","cc6677","aa4499"],["332288","88ccee","44aa99","117733","999933","ddcc77","cc6677","882255","aa4499"],["332288","88ccee","44aa99","117733","999933","ddcc77","661100","cc6677","882255","aa4499"],["332288","6699cc","88ccee","44aa99","117733","999933","ddcc77","661100","cc6677","882255","aa4499"],["332288","6699cc","88ccee","44aa99","117733","999933","ddcc77","661100","cc6677","aa4466","882255","aa4499"]],12,12)),palette.tolSequentialColor=function(e){return f(1-.392*(1+d((e-.869)/.255)),1.021-.456*(1+d((e-.527)/.376)),1-.493*(1+d((e-.272)/.309)))},palette.register(palette.Scheme.withColorFunction("tol-sq","sequential",palette.tolSequentialColor,!0)),palette.tolDivergingColor=function(d){var c=e(d,.572,1.524,-1.811)/e(d,1,-.291,.1574);return f(e(d,.235,-2.13,26.92,-65.5,63.5,-22.36),c*c,1/e(d,1.579,-4.03,12.92,-31.4,48.6,-23.36))},palette.register(palette.Scheme.withColorFunction("tol-dv","diverging",palette.tolDivergingColor,!0)),palette.tolRainbowColor=function(d){return f(e(d,.472,-.567,4.05)/e(d,1,8.72,-19.17,14.1),e(d,.108932,-1.22635,27.284,-98.577,163.3,-131.395,40.634),1/e(d,1.97,3.54,-68.5,243,-297,125))},palette.register(palette.Scheme.withColorFunction("tol-rainbow","qualitative",palette.tolRainbowColor,!0))}(),palette.register(palette.Scheme.fromPalettes("sol-base","sequential",[["002b36","073642","586e75","657b83","839496","93a1a1","eee8d5","fdf6e3"]],1,8)),palette.register(palette.Scheme.fromPalettes("sol-accent","qualitative",[["b58900","cb4b16","dc322f","d33682","6c71c4","268bd2","2aa198","859900"]])),function(){var f={YlGn:{type:"sequential",cbf:42,3:["f7fcb9","addd8e","31a354"],4:["ffffcc","c2e699","78c679","238443"],5:["ffffcc","c2e699","78c679","31a354","006837"],6:["ffffcc","d9f0a3","addd8e","78c679","31a354","006837"],7:["ffffcc","d9f0a3","addd8e","78c679","41ab5d","238443","005a32"],8:["ffffe5","f7fcb9","d9f0a3","addd8e","78c679","41ab5d","238443","005a32"],9:["ffffe5","f7fcb9","d9f0a3","addd8e","78c679","41ab5d","238443","006837","004529"]},YlGnBu:{type:"sequential",cbf:42,3:["edf8b1","7fcdbb","2c7fb8"],4:["ffffcc","a1dab4","41b6c4","225ea8"],5:["ffffcc","a1dab4","41b6c4","2c7fb8","253494"],6:["ffffcc","c7e9b4","7fcdbb","41b6c4","2c7fb8","253494"],7:["ffffcc","c7e9b4","7fcdbb","41b6c4","1d91c0","225ea8","0c2c84"],8:["ffffd9","edf8b1","c7e9b4","7fcdbb","41b6c4","1d91c0","225ea8","0c2c84"],9:["ffffd9","edf8b1","c7e9b4","7fcdbb","41b6c4","1d91c0","225ea8","253494","081d58"]},GnBu:{type:"sequential",cbf:42,3:["e0f3db","a8ddb5","43a2ca"],4:["f0f9e8","bae4bc","7bccc4","2b8cbe"],5:["f0f9e8","bae4bc","7bccc4","43a2ca","0868ac"],6:["f0f9e8","ccebc5","a8ddb5","7bccc4","43a2ca","0868ac"],7:["f0f9e8","ccebc5","a8ddb5","7bccc4","4eb3d3","2b8cbe","08589e"],8:["f7fcf0","e0f3db","ccebc5","a8ddb5","7bccc4","4eb3d3","2b8cbe","08589e"],9:["f7fcf0","e0f3db","ccebc5","a8ddb5","7bccc4","4eb3d3","2b8cbe","0868ac","084081"]},BuGn:{type:"sequential",cbf:42,3:["e5f5f9","99d8c9","2ca25f"],4:["edf8fb","b2e2e2","66c2a4","238b45"],5:["edf8fb","b2e2e2","66c2a4","2ca25f","006d2c"],6:["edf8fb","ccece6","99d8c9","66c2a4","2ca25f","006d2c"],7:["edf8fb","ccece6","99d8c9","66c2a4","41ae76","238b45","005824"],8:["f7fcfd","e5f5f9","ccece6","99d8c9","66c2a4","41ae76","238b45","005824"],9:["f7fcfd","e5f5f9","ccece6","99d8c9","66c2a4","41ae76","238b45","006d2c","00441b"]},PuBuGn:{type:"sequential",cbf:42,3:["ece2f0","a6bddb","1c9099"],4:["f6eff7","bdc9e1","67a9cf","02818a"],5:["f6eff7","bdc9e1","67a9cf","1c9099","016c59"],6:["f6eff7","d0d1e6","a6bddb","67a9cf","1c9099","016c59"],7:["f6eff7","d0d1e6","a6bddb","67a9cf","3690c0","02818a","016450"],8:["fff7fb","ece2f0","d0d1e6","a6bddb","67a9cf","3690c0","02818a","016450"],9:["fff7fb","ece2f0","d0d1e6","a6bddb","67a9cf","3690c0","02818a","016c59","014636"]},PuBu:{type:"sequential",cbf:42,3:["ece7f2","a6bddb","2b8cbe"],4:["f1eef6","bdc9e1","74a9cf","0570b0"],5:["f1eef6","bdc9e1","74a9cf","2b8cbe","045a8d"],6:["f1eef6","d0d1e6","a6bddb","74a9cf","2b8cbe","045a8d"],7:["f1eef6","d0d1e6","a6bddb","74a9cf","3690c0","0570b0","034e7b"],8:["fff7fb","ece7f2","d0d1e6","a6bddb","74a9cf","3690c0","0570b0","034e7b"],9:["fff7fb","ece7f2","d0d1e6","a6bddb","74a9cf","3690c0","0570b0","045a8d","023858"]},BuPu:{type:"sequential",cbf:42,3:["e0ecf4","9ebcda","8856a7"],4:["edf8fb","b3cde3","8c96c6","88419d"],5:["edf8fb","b3cde3","8c96c6","8856a7","810f7c"],6:["edf8fb","bfd3e6","9ebcda","8c96c6","8856a7","810f7c"],7:["edf8fb","bfd3e6","9ebcda","8c96c6","8c6bb1","88419d","6e016b"],8:["f7fcfd","e0ecf4","bfd3e6","9ebcda","8c96c6","8c6bb1","88419d","6e016b"],9:["f7fcfd","e0ecf4","bfd3e6","9ebcda","8c96c6","8c6bb1","88419d","810f7c","4d004b"]},RdPu:{type:"sequential",cbf:42,3:["fde0dd","fa9fb5","c51b8a"],4:["feebe2","fbb4b9","f768a1","ae017e"],5:["feebe2","fbb4b9","f768a1","c51b8a","7a0177"],6:["feebe2","fcc5c0","fa9fb5","f768a1","c51b8a","7a0177"],7:["feebe2","fcc5c0","fa9fb5","f768a1","dd3497","ae017e","7a0177"],8:["fff7f3","fde0dd","fcc5c0","fa9fb5","f768a1","dd3497","ae017e","7a0177"],9:["fff7f3","fde0dd","fcc5c0","fa9fb5","f768a1","dd3497","ae017e","7a0177","49006a"]},PuRd:{type:"sequential",cbf:42,3:["e7e1ef","c994c7","dd1c77"],4:["f1eef6","d7b5d8","df65b0","ce1256"],5:["f1eef6","d7b5d8","df65b0","dd1c77","980043"],6:["f1eef6","d4b9da","c994c7","df65b0","dd1c77","980043"],7:["f1eef6","d4b9da","c994c7","df65b0","e7298a","ce1256","91003f"],8:["f7f4f9","e7e1ef","d4b9da","c994c7","df65b0","e7298a","ce1256","91003f"],9:["f7f4f9","e7e1ef","d4b9da","c994c7","df65b0","e7298a","ce1256","980043","67001f"]},OrRd:{type:"sequential",cbf:42,3:["fee8c8","fdbb84","e34a33"],4:["fef0d9","fdcc8a","fc8d59","d7301f"],5:["fef0d9","fdcc8a","fc8d59","e34a33","b30000"],6:["fef0d9","fdd49e","fdbb84","fc8d59","e34a33","b30000"],7:["fef0d9","fdd49e","fdbb84","fc8d59","ef6548","d7301f","990000"],8:["fff7ec","fee8c8","fdd49e","fdbb84","fc8d59","ef6548","d7301f","990000"],9:["fff7ec","fee8c8","fdd49e","fdbb84","fc8d59","ef6548","d7301f","b30000","7f0000"]},YlOrRd:{type:"sequential",cbf:42,3:["ffeda0","feb24c","f03b20"],4:["ffffb2","fecc5c","fd8d3c","e31a1c"],5:["ffffb2","fecc5c","fd8d3c","f03b20","bd0026"],6:["ffffb2","fed976","feb24c","fd8d3c","f03b20","bd0026"],7:["ffffb2","fed976","feb24c","fd8d3c","fc4e2a","e31a1c","b10026"],8:["ffffcc","ffeda0","fed976","feb24c","fd8d3c","fc4e2a","e31a1c","b10026"],9:["ffffcc","ffeda0","fed976","feb24c","fd8d3c","fc4e2a","e31a1c","bd0026","800026"]},YlOrBr:{type:"sequential",cbf:42,3:["fff7bc","fec44f","d95f0e"],4:["ffffd4","fed98e","fe9929","cc4c02"],5:["ffffd4","fed98e","fe9929","d95f0e","993404"],6:["ffffd4","fee391","fec44f","fe9929","d95f0e","993404"],7:["ffffd4","fee391","fec44f","fe9929","ec7014","cc4c02","8c2d04"],8:["ffffe5","fff7bc","fee391","fec44f","fe9929","ec7014","cc4c02","8c2d04"],9:["ffffe5","fff7bc","fee391","fec44f","fe9929","ec7014","cc4c02","993404","662506"]},Purples:{type:"sequential",cbf:42,3:["efedf5","bcbddc","756bb1"],4:["f2f0f7","cbc9e2","9e9ac8","6a51a3"],5:["f2f0f7","cbc9e2","9e9ac8","756bb1","54278f"],6:["f2f0f7","dadaeb","bcbddc","9e9ac8","756bb1","54278f"],7:["f2f0f7","dadaeb","bcbddc","9e9ac8","807dba","6a51a3","4a1486"],8:["fcfbfd","efedf5","dadaeb","bcbddc","9e9ac8","807dba","6a51a3","4a1486"],9:["fcfbfd","efedf5","dadaeb","bcbddc","9e9ac8","807dba","6a51a3","54278f","3f007d"]},Blues:{type:"sequential",cbf:42,3:["deebf7","9ecae1","3182bd"],4:["eff3ff","bdd7e7","6baed6","2171b5"],5:["eff3ff","bdd7e7","6baed6","3182bd","08519c"],6:["eff3ff","c6dbef","9ecae1","6baed6","3182bd","08519c"],7:["eff3ff","c6dbef","9ecae1","6baed6","4292c6","2171b5","084594"],8:["f7fbff","deebf7","c6dbef","9ecae1","6baed6","4292c6","2171b5","084594"],9:["f7fbff","deebf7","c6dbef","9ecae1","6baed6","4292c6","2171b5","08519c","08306b"]},Greens:{type:"sequential",cbf:42,3:["e5f5e0","a1d99b","31a354"],4:["edf8e9","bae4b3","74c476","238b45"],5:["edf8e9","bae4b3","74c476","31a354","006d2c"],6:["edf8e9","c7e9c0","a1d99b","74c476","31a354","006d2c"],7:["edf8e9","c7e9c0","a1d99b","74c476","41ab5d","238b45","005a32"],8:["f7fcf5","e5f5e0","c7e9c0","a1d99b","74c476","41ab5d","238b45","005a32"],9:["f7fcf5","e5f5e0","c7e9c0","a1d99b","74c476","41ab5d","238b45","006d2c","00441b"]},Oranges:{type:"sequential",cbf:42,3:["fee6ce","fdae6b","e6550d"],4:["feedde","fdbe85","fd8d3c","d94701"],5:["feedde","fdbe85","fd8d3c","e6550d","a63603"],6:["feedde","fdd0a2","fdae6b","fd8d3c","e6550d","a63603"],7:["feedde","fdd0a2","fdae6b","fd8d3c","f16913","d94801","8c2d04"],8:["fff5eb","fee6ce","fdd0a2","fdae6b","fd8d3c","f16913","d94801","8c2d04"],9:["fff5eb","fee6ce","fdd0a2","fdae6b","fd8d3c","f16913","d94801","a63603","7f2704"]},Reds:{type:"sequential",cbf:42,3:["fee0d2","fc9272","de2d26"],4:["fee5d9","fcae91","fb6a4a","cb181d"],5:["fee5d9","fcae91","fb6a4a","de2d26","a50f15"],6:["fee5d9","fcbba1","fc9272","fb6a4a","de2d26","a50f15"],7:["fee5d9","fcbba1","fc9272","fb6a4a","ef3b2c","cb181d","99000d"],8:["fff5f0","fee0d2","fcbba1","fc9272","fb6a4a","ef3b2c","cb181d","99000d"],9:["fff5f0","fee0d2","fcbba1","fc9272","fb6a4a","ef3b2c","cb181d","a50f15","67000d"]},Greys:{type:"sequential",cbf:42,3:["f0f0f0","bdbdbd","636363"],4:["f7f7f7","cccccc","969696","525252"],5:["f7f7f7","cccccc","969696","636363","252525"],6:["f7f7f7","d9d9d9","bdbdbd","969696","636363","252525"],7:["f7f7f7","d9d9d9","bdbdbd","969696","737373","525252","252525"],8:["ffffff","f0f0f0","d9d9d9","bdbdbd","969696","737373","525252","252525"],9:["ffffff","f0f0f0","d9d9d9","bdbdbd","969696","737373","525252","252525","000000"]},PuOr:{type:"diverging",cbf:42,3:["f1a340","f7f7f7","998ec3"],4:["e66101","fdb863","b2abd2","5e3c99"],5:["e66101","fdb863","f7f7f7","b2abd2","5e3c99"],6:["b35806","f1a340","fee0b6","d8daeb","998ec3","542788"],7:["b35806","f1a340","fee0b6","f7f7f7","d8daeb","998ec3","542788"],8:["b35806","e08214","fdb863","fee0b6","d8daeb","b2abd2","8073ac","542788"],9:["b35806","e08214","fdb863","fee0b6","f7f7f7","d8daeb","b2abd2","8073ac","542788"],10:["7f3b08","b35806","e08214","fdb863","fee0b6","d8daeb","b2abd2","8073ac","542788","2d004b"],11:["7f3b08","b35806","e08214","fdb863","fee0b6","f7f7f7","d8daeb","b2abd2","8073ac","542788","2d004b"]},BrBG:{type:"diverging",cbf:42,3:["d8b365","f5f5f5","5ab4ac"],4:["a6611a","dfc27d","80cdc1","018571"],5:["a6611a","dfc27d","f5f5f5","80cdc1","018571"],6:["8c510a","d8b365","f6e8c3","c7eae5","5ab4ac","01665e"],7:["8c510a","d8b365","f6e8c3","f5f5f5","c7eae5","5ab4ac","01665e"],8:["8c510a","bf812d","dfc27d","f6e8c3","c7eae5","80cdc1","35978f","01665e"],9:["8c510a","bf812d","dfc27d","f6e8c3","f5f5f5","c7eae5","80cdc1","35978f","01665e"],10:["543005","8c510a","bf812d","dfc27d","f6e8c3","c7eae5","80cdc1","35978f","01665e","003c30"],11:["543005","8c510a","bf812d","dfc27d","f6e8c3","f5f5f5","c7eae5","80cdc1","35978f","01665e","003c30"]},PRGn:{type:"diverging",cbf:42,3:["af8dc3","f7f7f7","7fbf7b"],4:["7b3294","c2a5cf","a6dba0","008837"],5:["7b3294","c2a5cf","f7f7f7","a6dba0","008837"],6:["762a83","af8dc3","e7d4e8","d9f0d3","7fbf7b","1b7837"],7:["762a83","af8dc3","e7d4e8","f7f7f7","d9f0d3","7fbf7b","1b7837"],8:["762a83","9970ab","c2a5cf","e7d4e8","d9f0d3","a6dba0","5aae61","1b7837"],9:["762a83","9970ab","c2a5cf","e7d4e8","f7f7f7","d9f0d3","a6dba0","5aae61","1b7837"],10:["40004b","762a83","9970ab","c2a5cf","e7d4e8","d9f0d3","a6dba0","5aae61","1b7837","00441b"],11:["40004b","762a83","9970ab","c2a5cf","e7d4e8","f7f7f7","d9f0d3","a6dba0","5aae61","1b7837","00441b"]},PiYG:{type:"diverging",cbf:42,3:["e9a3c9","f7f7f7","a1d76a"],4:["d01c8b","f1b6da","b8e186","4dac26"],5:["d01c8b","f1b6da","f7f7f7","b8e186","4dac26"],6:["c51b7d","e9a3c9","fde0ef","e6f5d0","a1d76a","4d9221"],7:["c51b7d","e9a3c9","fde0ef","f7f7f7","e6f5d0","a1d76a","4d9221"],8:["c51b7d","de77ae","f1b6da","fde0ef","e6f5d0","b8e186","7fbc41","4d9221"],9:["c51b7d","de77ae","f1b6da","fde0ef","f7f7f7","e6f5d0","b8e186","7fbc41","4d9221"],10:["8e0152","c51b7d","de77ae","f1b6da","fde0ef","e6f5d0","b8e186","7fbc41","4d9221","276419"],11:["8e0152","c51b7d","de77ae","f1b6da","fde0ef","f7f7f7","e6f5d0","b8e186","7fbc41","4d9221","276419"]},RdBu:{type:"diverging",cbf:42,3:["ef8a62","f7f7f7","67a9cf"],4:["ca0020","f4a582","92c5de","0571b0"],5:["ca0020","f4a582","f7f7f7","92c5de","0571b0"],6:["b2182b","ef8a62","fddbc7","d1e5f0","67a9cf","2166ac"],7:["b2182b","ef8a62","fddbc7","f7f7f7","d1e5f0","67a9cf","2166ac"],8:["b2182b","d6604d","f4a582","fddbc7","d1e5f0","92c5de","4393c3","2166ac"],9:["b2182b","d6604d","f4a582","fddbc7","f7f7f7","d1e5f0","92c5de","4393c3","2166ac"],10:["67001f","b2182b","d6604d","f4a582","fddbc7","d1e5f0","92c5de","4393c3","2166ac","053061"],11:["67001f","b2182b","d6604d","f4a582","fddbc7","f7f7f7","d1e5f0","92c5de","4393c3","2166ac","053061"]},RdGy:{type:"diverging",cbf:42,3:["ef8a62","ffffff","999999"],4:["ca0020","f4a582","bababa","404040"],5:["ca0020","f4a582","ffffff","bababa","404040"],6:["b2182b","ef8a62","fddbc7","e0e0e0","999999","4d4d4d"],7:["b2182b","ef8a62","fddbc7","ffffff","e0e0e0","999999","4d4d4d"],8:["b2182b","d6604d","f4a582","fddbc7","e0e0e0","bababa","878787","4d4d4d"],9:["b2182b","d6604d","f4a582","fddbc7","ffffff","e0e0e0","bababa","878787","4d4d4d"],10:["67001f","b2182b","d6604d","f4a582","fddbc7","e0e0e0","bababa","878787","4d4d4d","1a1a1a"],11:["67001f","b2182b","d6604d","f4a582","fddbc7","ffffff","e0e0e0","bababa","878787","4d4d4d","1a1a1a"]},RdYlBu:{type:"diverging",cbf:42,3:["fc8d59","ffffbf","91bfdb"],4:["d7191c","fdae61","abd9e9","2c7bb6"],5:["d7191c","fdae61","ffffbf","abd9e9","2c7bb6"],6:["d73027","fc8d59","fee090","e0f3f8","91bfdb","4575b4"],7:["d73027","fc8d59","fee090","ffffbf","e0f3f8","91bfdb","4575b4"],8:["d73027","f46d43","fdae61","fee090","e0f3f8","abd9e9","74add1","4575b4"],9:["d73027","f46d43","fdae61","fee090","ffffbf","e0f3f8","abd9e9","74add1","4575b4"],10:["a50026","d73027","f46d43","fdae61","fee090","e0f3f8","abd9e9","74add1","4575b4","313695"],11:["a50026","d73027","f46d43","fdae61","fee090","ffffbf","e0f3f8","abd9e9","74add1","4575b4","313695"]},Spectral:{type:"diverging",cbf:0,3:["fc8d59","ffffbf","99d594"],4:["d7191c","fdae61","abdda4","2b83ba"],5:["d7191c","fdae61","ffffbf","abdda4","2b83ba"],6:["d53e4f","fc8d59","fee08b","e6f598","99d594","3288bd"],7:["d53e4f","fc8d59","fee08b","ffffbf","e6f598","99d594","3288bd"],8:["d53e4f","f46d43","fdae61","fee08b","e6f598","abdda4","66c2a5","3288bd"],9:["d53e4f","f46d43","fdae61","fee08b","ffffbf","e6f598","abdda4","66c2a5","3288bd"],10:["9e0142","d53e4f","f46d43","fdae61","fee08b","e6f598","abdda4","66c2a5","3288bd","5e4fa2"],11:["9e0142","d53e4f","f46d43","fdae61","fee08b","ffffbf","e6f598","abdda4","66c2a5","3288bd","5e4fa2"]},RdYlGn:{type:"diverging",cbf:0,3:["fc8d59","ffffbf","91cf60"],4:["d7191c","fdae61","a6d96a","1a9641"],5:["d7191c","fdae61","ffffbf","a6d96a","1a9641"],6:["d73027","fc8d59","fee08b","d9ef8b","91cf60","1a9850"],7:["d73027","fc8d59","fee08b","ffffbf","d9ef8b","91cf60","1a9850"],8:["d73027","f46d43","fdae61","fee08b","d9ef8b","a6d96a","66bd63","1a9850"],9:["d73027","f46d43","fdae61","fee08b","ffffbf","d9ef8b","a6d96a","66bd63","1a9850"],10:["a50026","d73027","f46d43","fdae61","fee08b","d9ef8b","a6d96a","66bd63","1a9850","006837"],11:["a50026","d73027","f46d43","fdae61","fee08b","ffffbf","d9ef8b","a6d96a","66bd63","1a9850","006837"]},Accent:{type:"qualitative",cbf:0,3:["7fc97f","beaed4","fdc086"],4:["7fc97f","beaed4","fdc086","ffff99"],5:["7fc97f","beaed4","fdc086","ffff99","386cb0"],6:["7fc97f","beaed4","fdc086","ffff99","386cb0","f0027f"],7:["7fc97f","beaed4","fdc086","ffff99","386cb0","f0027f","bf5b17"],8:["7fc97f","beaed4","fdc086","ffff99","386cb0","f0027f","bf5b17","666666"]},Dark2:{type:"qualitative",cbf:3,3:["1b9e77","d95f02","7570b3"],4:["1b9e77","d95f02","7570b3","e7298a"],5:["1b9e77","d95f02","7570b3","e7298a","66a61e"],6:["1b9e77","d95f02","7570b3","e7298a","66a61e","e6ab02"],7:["1b9e77","d95f02","7570b3","e7298a","66a61e","e6ab02","a6761d"],8:["1b9e77","d95f02","7570b3","e7298a","66a61e","e6ab02","a6761d","666666"]},Paired:{type:"qualitative",cbf:4,3:["a6cee3","1f78b4","b2df8a"],4:["a6cee3","1f78b4","b2df8a","33a02c"],5:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99"],6:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c"],7:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c","fdbf6f"],8:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c","fdbf6f","ff7f00"],9:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c","fdbf6f","ff7f00","cab2d6"],10:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c","fdbf6f","ff7f00","cab2d6","6a3d9a"],11:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c","fdbf6f","ff7f00","cab2d6","6a3d9a","ffff99"],12:["a6cee3","1f78b4","b2df8a","33a02c","fb9a99","e31a1c","fdbf6f","ff7f00","cab2d6","6a3d9a","ffff99","b15928"]},Pastel1:{type:"qualitative",cbf:0,3:["fbb4ae","b3cde3","ccebc5"],4:["fbb4ae","b3cde3","ccebc5","decbe4"],5:["fbb4ae","b3cde3","ccebc5","decbe4","fed9a6"],6:["fbb4ae","b3cde3","ccebc5","decbe4","fed9a6","ffffcc"],7:["fbb4ae","b3cde3","ccebc5","decbe4","fed9a6","ffffcc","e5d8bd"],8:["fbb4ae","b3cde3","ccebc5","decbe4","fed9a6","ffffcc","e5d8bd","fddaec"],9:["fbb4ae","b3cde3","ccebc5","decbe4","fed9a6","ffffcc","e5d8bd","fddaec","f2f2f2"]},Pastel2:{type:"qualitative",cbf:0,3:["b3e2cd","fdcdac","cbd5e8"],4:["b3e2cd","fdcdac","cbd5e8","f4cae4"],5:["b3e2cd","fdcdac","cbd5e8","f4cae4","e6f5c9"],6:["b3e2cd","fdcdac","cbd5e8","f4cae4","e6f5c9","fff2ae"],7:["b3e2cd","fdcdac","cbd5e8","f4cae4","e6f5c9","fff2ae","f1e2cc"],8:["b3e2cd","fdcdac","cbd5e8","f4cae4","e6f5c9","fff2ae","f1e2cc","cccccc"]},Set1:{type:"qualitative",cbf:0,3:["e41a1c","377eb8","4daf4a"],4:["e41a1c","377eb8","4daf4a","984ea3"],5:["e41a1c","377eb8","4daf4a","984ea3","ff7f00"],6:["e41a1c","377eb8","4daf4a","984ea3","ff7f00","ffff33"],7:["e41a1c","377eb8","4daf4a","984ea3","ff7f00","ffff33","a65628"],8:["e41a1c","377eb8","4daf4a","984ea3","ff7f00","ffff33","a65628","f781bf"],9:["e41a1c","377eb8","4daf4a","984ea3","ff7f00","ffff33","a65628","f781bf","999999"]},Set2:{type:"qualitative",cbf:3,3:["66c2a5","fc8d62","8da0cb"],4:["66c2a5","fc8d62","8da0cb","e78ac3"],5:["66c2a5","fc8d62","8da0cb","e78ac3","a6d854"],6:["66c2a5","fc8d62","8da0cb","e78ac3","a6d854","ffd92f"],7:["66c2a5","fc8d62","8da0cb","e78ac3","a6d854","ffd92f","e5c494"],8:["66c2a5","fc8d62","8da0cb","e78ac3","a6d854","ffd92f","e5c494","b3b3b3"]},Set3:{type:"qualitative",cbf:0,3:["8dd3c7","ffffb3","bebada"],4:["8dd3c7","ffffb3","bebada","fb8072"],5:["8dd3c7","ffffb3","bebada","fb8072","80b1d3"],6:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462"],7:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462","b3de69"],8:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462","b3de69","fccde5"],9:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462","b3de69","fccde5","d9d9d9"],10:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462","b3de69","fccde5","d9d9d9","bc80bd"],11:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462","b3de69","fccde5","d9d9d9","bc80bd","ccebc5"],12:["8dd3c7","ffffb3","bebada","fb8072","80b1d3","fdb462","b3de69","fccde5","d9d9d9","bc80bd","ccebc5","ffed6f"]}};for(var e in f){var d=f[e];d=palette.Scheme.fromPalettes("cb-"+e,[d.type,"cb-"+d.type],d,12,d.cbf),palette.register(d)}}(),"object"==typeof module&&module.exports&&(module.exports=palette);
+</script>
+<script type="text/javascript">
+
+var m_chart = undefined;
+
+var m_tooltipLabels = [];
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "3cf763dc9ad1b1f5e84e9b20428198b23b0861e3", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/3cf763dc9ad1b1f5e84e9b20428198b23b0861e3";
+dict["plus_minus"] = "10";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "b583a5be05fcd38e9a2f339f03b54df33d537552", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/b583a5be05fcd38e9a2f339f03b54df33d537552";
+dict["plus_minus"] = "4";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "8501e5dbb8d3040453a89bb0d3562526086d51e5", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/8501e5dbb8d3040453a89bb0d3562526086d51e5";
+dict["plus_minus"] = "116";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "037eb71bd69a9d203c7de7e0527748b5cd3d9211", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/037eb71bd69a9d203c7de7e0527748b5cd3d9211";
+dict["plus_minus"] = "71";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "c8f4497ede1a68f1a6a1c33e786eaf2468a34ec0", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/c8f4497ede1a68f1a6a1c33e786eaf2468a34ec0";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "fca78fce3335e19417f6bb0b6218995097892b77", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/fca78fce3335e19417f6bb0b6218995097892b77";
+dict["plus_minus"] = "438";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "dae18e94a87411aa1e8da9c10391186488ba8b8f", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/dae18e94a87411aa1e8da9c10391186488ba8b8f";
+dict["plus_minus"] = "34";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "0e55a6bbdef99060b487daadee060d47a65f29f7", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/0e55a6bbdef99060b487daadee060d47a65f29f7";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "17ab9a8587b2b370c1143946982a4522400e27e3", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/17ab9a8587b2b370c1143946982a4522400e27e3";
+dict["plus_minus"] = "13";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "a81b75c65b8dba41444f254b6f5a3dc596e6c45f", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/a81b75c65b8dba41444f254b6f5a3dc596e6c45f";
+dict["plus_minus"] = "13";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "6ec62fc8b4dc44f29e834039c0b772172841660f", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/6ec62fc8b4dc44f29e834039c0b772172841660f";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1188ae48a2357f0697dfb4bcddf35b552ca826e0", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/1188ae48a2357f0697dfb4bcddf35b552ca826e0";
+dict["plus_minus"] = "3";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "7c6b9737038ee5337f2ae496c8910e101a804705", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/7c6b9737038ee5337f2ae496c8910e101a804705";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "834000e81542616c606fcbc9870735ccb79c5499", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/834000e81542616c606fcbc9870735ccb79c5499";
+dict["plus_minus"] = "1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "eef4800b59b1a276843417a76f18727fd5ca06f2", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/eef4800b59b1a276843417a76f18727fd5ca06f2";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "f7b3c0b14854f336cac652bfb95036912b028959", "repo": "styx", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/styx/commit/f7b3c0b14854f336cac652bfb95036912b028959";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "78cbd1999f212c045c8e95c8ad2b3abd37c872b1", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/78cbd1999f212c045c8e95c8ad2b3abd37c872b1";
+dict["plus_minus"] = "2";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "bd10d39a284e238ac8021054de96677ff03ced04", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/bd10d39a284e238ac8021054de96677ff03ced04";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "14eea1bc126aafd36ebd151b39c4eda8966e7087", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/14eea1bc126aafd36ebd151b39c4eda8966e7087";
+dict["plus_minus"] = "2";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "a5f95fe2381f74ed083aa1a5004279d76fafa72f", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/a5f95fe2381f74ed083aa1a5004279d76fafa72f";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "8c58ce428e633a535d36e4ad5c4880aec325f9ae", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/8c58ce428e633a535d36e4ad5c4880aec325f9ae";
+dict["plus_minus"] = "18";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "a11b087f1316db60606ff7f748d8dc9cab9192a1", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/a11b087f1316db60606ff7f748d8dc9cab9192a1";
+dict["plus_minus"] = "4";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "318b0e63aef6461c3b855559d4f508fbf3c4b880", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/318b0e63aef6461c3b855559d4f508fbf3c4b880";
+dict["plus_minus"] = "4";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1fa93babeaff0e4807627c7d0196210e95630252", "repo": "luigi", "owner": "spotify" };
+
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/1fa93babeaff0e4807627c7d0196210e95630252";
+dict["plus_minus"] = "105";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels.push([]);
+
+var dict = {"sha": "f5b91c544d4aa0f29527413c02c2d021dfb2dee8", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/f5b91c544d4aa0f29527413c02c2d021dfb2dee8";
+dict["plus_minus"] = "8";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "4188b36f8b99010df55fd20a8a1324f7113b25bd", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/4188b36f8b99010df55fd20a8a1324f7113b25bd";
+dict["plus_minus"] = "-25";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "b0beaedaf9f60c1933757f2ee2fbae0c84cb2492", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/b0beaedaf9f60c1933757f2ee2fbae0c84cb2492";
+dict["plus_minus"] = "88";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "30a8e7f09999457ff825686b25a4bc060adad966", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/30a8e7f09999457ff825686b25a4bc060adad966";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "071987819aee3bbd75261bdc3ad3869edc6f5cad", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/071987819aee3bbd75261bdc3ad3869edc6f5cad";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "8472e023927b1c586d99f551374e4acda9f90c5e", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/8472e023927b1c586d99f551374e4acda9f90c5e";
+dict["plus_minus"] = "11";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "731b7000b64122cdfc628206508b56a0ca02ca1b", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/731b7000b64122cdfc628206508b56a0ca02ca1b";
+dict["plus_minus"] = "38";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "eaa0bc7c1f48a7810bbaf23a826250806e69bde6", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/eaa0bc7c1f48a7810bbaf23a826250806e69bde6";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "7265e097a6f7222c7472dcb9502b5fd9aeb17fbb", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/7265e097a6f7222c7472dcb9502b5fd9aeb17fbb";
+dict["plus_minus"] = "251";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "55b0d6969c42f0950563b78a0859bd9c15228feb", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/55b0d6969c42f0950563b78a0859bd9c15228feb";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "f7401f11fbc6178ea3bd422753f0f2bf81676e94", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/f7401f11fbc6178ea3bd422753f0f2bf81676e94";
+dict["plus_minus"] = "6";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "8c58ce428e633a535d36e4ad5c4880aec325f9ae", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "yonromai";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/8c58ce428e633a535d36e4ad5c4880aec325f9ae";
+dict["plus_minus"] = "18";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "093f12e04cecba57561a409449c9287fac51fad0", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/093f12e04cecba57561a409449c9287fac51fad0";
+dict["plus_minus"] = "70";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "6cead4e309ad8c6ea72c7e42dd9466ff8df71439", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/6cead4e309ad8c6ea72c7e42dd9466ff8df71439";
+dict["plus_minus"] = "297";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "8b2050a1cdcdd7a2510b491d721540882229a47b", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/8b2050a1cdcdd7a2510b491d721540882229a47b";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "08a5c5a3e7bad6f5bacb3f641bed966f1cf71378", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/08a5c5a3e7bad6f5bacb3f641bed966f1cf71378";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1d1cf023e6c1e5353e860cd3df15a828256148be", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/1d1cf023e6c1e5353e860cd3df15a828256148be";
+dict["plus_minus"] = "-1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "89f50e0988bcffd2aa89e4900d2548dbf7e9360b", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/89f50e0988bcffd2aa89e4900d2548dbf7e9360b";
+dict["plus_minus"] = "1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "23b2735e371ad2559bfac9b2cd34d44f0eff4c97", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/23b2735e371ad2559bfac9b2cd34d44f0eff4c97";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1e46f2c5c4569a3e19686685bd879578946441b8", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/1e46f2c5c4569a3e19686685bd879578946441b8";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "40cb86595fb92db750fa082b2fca9fa8afd0e947", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/40cb86595fb92db750fa082b2fca9fa8afd0e947";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "a0c8f888f523c5639bd649f7bbe4c96002efb328", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/a0c8f888f523c5639bd649f7bbe4c96002efb328";
+dict["plus_minus"] = "1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "66aff6a7a8a177a03683e8613c66ce49d0b9dcb4", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/66aff6a7a8a177a03683e8613c66ce49d0b9dcb4";
+dict["plus_minus"] = "26";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "955b3f2c48bd6fb54a8bdbcccbf6b5834ee3ac75", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/955b3f2c48bd6fb54a8bdbcccbf6b5834ee3ac75";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "b0c687f44e316be4fff3993bc3e923848aee427c", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/b0c687f44e316be4fff3993bc3e923848aee427c";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "398eab87a8ba73e725d60cbc9eb9110376b4feab", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "pkaleta";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/398eab87a8ba73e725d60cbc9eb9110376b4feab";
+dict["plus_minus"] = "6";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "f6ae45775bd1bc830a40452f0fad02a80b8961b3", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/f6ae45775bd1bc830a40452f0fad02a80b8961b3";
+dict["plus_minus"] = "115";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "2895747b5299235321896fae49ab7a8d1c4423e6", "repo": "styx", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/2895747b5299235321896fae49ab7a8d1c4423e6";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "735b773c1a7cd54b2340c2d0982d23a3a6a36cb2", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/735b773c1a7cd54b2340c2d0982d23a3a6a36cb2";
+dict["plus_minus"] = "34";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "dbeaf13afb1f0adcbd83e964315b91e06c5784fe", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/dbeaf13afb1f0adcbd83e964315b91e06c5784fe";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "78ba4fe2d10fee94e485499b4f1484057d25b0ed", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/78ba4fe2d10fee94e485499b4f1484057d25b0ed";
+dict["plus_minus"] = "-43";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "14a435ab56b25837d0c5273e37d389d558faa7c3", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/14a435ab56b25837d0c5273e37d389d558faa7c3";
+dict["plus_minus"] = "5";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "051c1543097013486d1220feabad51f380bef929", "repo": "styx", "owner": "spotify" };
+dict["author"] = "danielnorberg";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/051c1543097013486d1220feabad51f380bef929";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "257ff97fe4436d6663ca91eecb24d7a38fc6642b", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/257ff97fe4436d6663ca91eecb24d7a38fc6642b";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "bcc8c7218b52aa15b5ebd4908e744fac9c77b05c", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/bcc8c7218b52aa15b5ebd4908e744fac9c77b05c";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "636a0203f650688c4ce249a994c1d6169e5a16af", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "nathantsoi";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/636a0203f650688c4ce249a994c1d6169e5a16af";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "0a476eea55f26e726f4f4deee53fbec7b191e196", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/0a476eea55f26e726f4f4deee53fbec7b191e196";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "c9b074d1ec08c293112a113b1f11ef02a4f272b1", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/c9b074d1ec08c293112a113b1f11ef02a4f272b1";
+dict["plus_minus"] = "-1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "168653f0ab0586c67b5bbcc75c951cc30155f1b4", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/168653f0ab0586c67b5bbcc75c951cc30155f1b4";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1a1493f11b849ebcbeb07b3f9a963737d8a4b8bb", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/1a1493f11b849ebcbeb07b3f9a963737d8a4b8bb";
+dict["plus_minus"] = "-1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1f262d67fcccf4808914fa64009e1e66456e78c7", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/1f262d67fcccf4808914fa64009e1e66456e78c7";
+dict["plus_minus"] = "2";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "ad56d45f66aec1a73d4be2907600b9d40d5a1fc2", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/ad56d45f66aec1a73d4be2907600b9d40d5a1fc2";
+dict["plus_minus"] = "4";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "045b4827a8be26e92573e2a303c7047bb791d2cc", "repo": "styx", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/045b4827a8be26e92573e2a303c7047bb791d2cc";
+dict["plus_minus"] = "140";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "9c49922e758d362b3f1a6b096ddd7eb788fac90d", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/9c49922e758d362b3f1a6b096ddd7eb788fac90d";
+dict["plus_minus"] = "-1";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "4df59b96efefd1e6367bb68d1cc2f1f742fdd435", "repo": "styx", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/4df59b96efefd1e6367bb68d1cc2f1f742fdd435";
+dict["plus_minus"] = "5";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "c8f4497ede1a68f1a6a1c33e786eaf2468a34ec0", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "himikof";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/c8f4497ede1a68f1a6a1c33e786eaf2468a34ec0";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "64d6337a94f81ac1a7d7cc5a8bdcfbc8e4acee05", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/64d6337a94f81ac1a7d7cc5a8bdcfbc8e4acee05";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "45f40a995ce342ef7e2ab3513b2cb77f13ac7151", "repo": "styx", "owner": "spotify" };
+dict["author"] = "ulzha";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/45f40a995ce342ef7e2ab3513b2cb77f13ac7151";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "db0cc792be3e5bbed974464eb6a31d8d7df0a09e", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/db0cc792be3e5bbed974464eb6a31d8d7df0a09e";
+dict["plus_minus"] = "219";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "a8b561ba5285f4e74b649a9d62722275427495d1", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/a8b561ba5285f4e74b649a9d62722275427495d1";
+dict["plus_minus"] = "-7";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "1662df6c78b7d609074632ddfd1b648cb67655d9", "repo": "styx", "owner": "spotify" };
+dict["author"] = "NatashaL";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/1662df6c78b7d609074632ddfd1b648cb67655d9";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "6b9b8c59703560f197c71adfe0ac9770cfeffb33", "repo": "styx", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/6b9b8c59703560f197c71adfe0ac9770cfeffb33";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "689405636ec6e9e8939317e9b134765f16fc26b2", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/689405636ec6e9e8939317e9b134765f16fc26b2";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "b6911659c5d6567432d35e1bf902fd4725edea2a", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/b6911659c5d6567432d35e1bf902fd4725edea2a";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "9735b5aad2690d0c81bb5aac19c1237e87e2ca2e", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "Tarrasch";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/9735b5aad2690d0c81bb5aac19c1237e87e2ca2e";
+dict["plus_minus"] = "11";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "b583a5be05fcd38e9a2f339f03b54df33d537552", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "danthelion";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/b583a5be05fcd38e9a2f339f03b54df33d537552";
+dict["plus_minus"] = "4";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "be10d5eebd6ef8c43f34621ca78581dd8a3d8243", "repo": "styx", "owner": "spotify" };
+dict["author"] = "honnix";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/be10d5eebd6ef8c43f34621ca78581dd8a3d8243";
+dict["plus_minus"] = "-19";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "3cf763dc9ad1b1f5e84e9b20428198b23b0861e3", "repo": "luigi", "owner": "spotify" };
+dict["author"] = "andrewsmartin";
+dict["commit_url"] = "https://github.com/spotify/luigi/commit/3cf763dc9ad1b1f5e84e9b20428198b23b0861e3";
+dict["plus_minus"] = "10";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "fa8e73d5d1719776ce30faeaef4444fe2a58a4d2", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/fa8e73d5d1719776ce30faeaef4444fe2a58a4d2";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "7b4e083782d80eccf0adcfecdca347af218f351d", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/7b4e083782d80eccf0adcfecdca347af218f351d";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "510c96aeedc2d8bcd240d7ed51916d9f7f0e1111", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/510c96aeedc2d8bcd240d7ed51916d9f7f0e1111";
+dict["plus_minus"] = "231";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "30e381991fc197425056e8e3dc737f3213821656", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/30e381991fc197425056e8e3dc737f3213821656";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "78ac4aff45a3102e5632054ab03eb6df3fc3b9e7", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/78ac4aff45a3102e5632054ab03eb6df3fc3b9e7";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "6bc25b63461bdd27d4e1909f57a06f5739f070bc", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/6bc25b63461bdd27d4e1909f57a06f5739f070bc";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "aa9c75727618649d9c66b4c4061957c8ef46cf8e", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/aa9c75727618649d9c66b4c4061957c8ef46cf8e";
+dict["plus_minus"] = "2";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "5dbee3d34f38aab3f108952001eb9162c40ac753", "repo": "styx", "owner": "spotify" };
+dict["author"] = "fabriziodemaria";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/5dbee3d34f38aab3f108952001eb9162c40ac753";
+dict["plus_minus"] = "202";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+var dict = {"sha": "34985752b2c9b3def1b9b99e34f911946dbb237a", "repo": "styx", "owner": "spotify" };
+dict["author"] = "spotify-helios-ci-agent";
+dict["commit_url"] = "https://github.com/spotify/styx/commit/34985752b2c9b3def1b9b99e34f911946dbb237a";
+dict["plus_minus"] = "0";
+m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+
+
+function doStuff() {
+  var ctx = document.getElementById('myChart').getContext('2d');
+  var my_palette = palette('mpn65', 11);
+  m_chart = new Chart(ctx, {
+      // The type of chart we want to create
+      type: 'line',
+
+      // The data for our dataset
+      data: {
+          datasets: [
+            {
+                    label: "andrewsmartin (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[0],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 2, 15, 18, 5, 56),
+                        y: 10
+                      }
+                    ]
+                },{
+                    label: "danthelion (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[1],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 2, 14, 12, 32, 28),
+                        y: 4
+                      }
+                    ]
+                },{
+                    label: "dmohns (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[2],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 1, 16, 19, 45, 10),
+                        y: 116
+                      }
+                    ]
+                },{
+                    label: "Gr1f0n6x (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[3],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 1, 26, 21, 8, 16),
+                        y: 71
+                      }
+                    ]
+                },{
+                    label: "himikof (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[4],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 1, 24, 14, 36, 19),
+                        y: 0
+                      }
+                    ]
+                },{
+                    label: "honnix (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[5],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 0, 12, 9, 29, 28),
+                        y: 438
+                      },{
+                        x: new Date(2018, 0, 26, 12, 41, 45),
+                        y: 666
+                      },{
+                        x: new Date(2018, 1, 8, 8, 2, 56),
+                        y: 706
+                      },{
+                        x: new Date(2018, 1, 20, 14, 18, 28),
+                        y: 817
+                      },{
+                        x: new Date(2018, 1, 22, 13, 41, 41),
+                        y: 1143
+                      },{
+                        x: new Date(2018, 1, 23, 13, 36, 55),
+                        y: 1237
+                      },{
+                        x: new Date(2018, 2, 12, 16, 42, 42),
+                        y: 1274
+                      },{
+                        x: new Date(2018, 2, 13, 15, 42, 1),
+                        y: 1306
+                      },{
+                        x: new Date(2018, 2, 26, 8, 46, 29),
+                        y: 1318
+                      },{
+                        x: new Date(2018, 2, 27, 14, 51, 33),
+                        y: 1431
+                      },{
+                        x: new Date(2018, 2, 27, 14, 57, 48),
+                        y: 1431
+                      }
+                    ]
+                },{
+                    label: "switzer (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[6],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 2, 1, 19, 50, 20),
+                        y: 2
+                      }
+                    ]
+                },{
+                    label: "Tarrasch (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[7],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 0, 16, 19, 34, 33),
+                        y: 0
+                      },{
+                        x: new Date(2018, 2, 14, 22, 25, 23),
+                        y: 11
+                      }
+                    ]
+                },{
+                    label: "tmattio (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[8],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 2, 5, 12, 56, 7),
+                        y: 0
+                      }
+                    ]
+                },{
+                    label: "yonromai (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[9],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 0, 19, 19, 41, 33),
+                        y: 18
+                      },{
+                        x: new Date(2018, 0, 22, 16, 53, 57),
+                        y: 72
+                      },{
+                        x: new Date(2018, 1, 19, 16, 50, 4),
+                        y: 109
+                      },{
+                        x: new Date(2018, 1, 22, 0, 31, 27),
+                        y: 218
+                      }
+                    ]
+                },{
+                    label: "TOTAL (difference)",
+                    // % 65 because there are only 65 colors available in the selected palette (mpn65).
+                    borderColor: '#' + my_palette[10],
+                    backgroundColor: 'rgba(0, 0, 0, 0.0)',
+                    data: [
+                      {
+                        x: new Date(2018, 0, 2, 13, 8, 30),
+                        y: 8
+                      },{
+                        x: new Date(2018, 0, 4, 15, 2, 56),
+                        y: -18
+                      },{
+                        x: new Date(2018, 0, 10, 15, 27, 48),
+                        y: 247
+                      },{
+                        x: new Date(2018, 0, 12, 10, 1, 59),
+                        y: 724
+                      },{
+                        x: new Date(2018, 0, 15, 12, 48, 9),
+                        y: 959
+                      },{
+                        x: new Date(2018, 0, 16, 6, 56, 26),
+                        y: 1165
+                      },{
+                        x: new Date(2018, 0, 16, 16, 3, 9),
+                        y: 2106
+                      },{
+                        x: new Date(2018, 0, 17, 7, 51, 9),
+                        y: 2154
+                      },{
+                        x: new Date(2018, 0, 18, 3, 36, 33),
+                        y: 2479
+                      },{
+                        x: new Date(2018, 0, 19, 5, 43, 14),
+                        y: 2668
+                      },{
+                        x: new Date(2018, 0, 19, 7, 12, 18),
+                        y: 2851
+                      },{
+                        x: new Date(2018, 0, 19, 19, 41, 33),
+                        y: 3021
+                      },{
+                        x: new Date(2018, 0, 20, 13, 19, 31),
+                        y: 3142
+                      },{
+                        x: new Date(2018, 0, 22, 5, 29, 9),
+                        y: 3554
+                      },{
+                        x: new Date(2018, 0, 23, 5, 13, 16),
+                        y: 3542
+                      },{
+                        x: new Date(2018, 0, 24, 6, 14, 49),
+                        y: 3584
+                      },{
+                        x: new Date(2018, 0, 24, 8, 27, 33),
+                        y: 3705
+                      },{
+                        x: new Date(2018, 0, 25, 2, 52, 2),
+                        y: 3804
+                      },{
+                        x: new Date(2018, 0, 25, 6, 11, 42),
+                        y: 4546
+                      },{
+                        x: new Date(2018, 0, 25, 14, 9, 16),
+                        y: 4590
+                      },{
+                        x: new Date(2018, 0, 25, 15, 7, 57),
+                        y: 4590
+                      },{
+                        x: new Date(2018, 0, 25, 16, 11, 55),
+                        y: 4591
+                      },{
+                        x: new Date(2018, 0, 26, 2, 25, 49),
+                        y: 4600
+                      },{
+                        x: new Date(2018, 0, 26, 14, 46, 25),
+                        y: 4632
+                      },{
+                        x: new Date(2018, 0, 30, 12, 23, 38),
+                        y: 5094
+                      },{
+                        x: new Date(2018, 0, 30, 20, 43, 10),
+                        y: 5807
+                      },{
+                        x: new Date(2018, 1, 2, 11, 49, 49),
+                        y: 6076
+                      },{
+                        x: new Date(2018, 1, 5, 12, 43, 51),
+                        y: 6524
+                      },{
+                        x: new Date(2018, 1, 5, 15, 39, 40),
+                        y: 6878
+                      },{
+                        x: new Date(2018, 1, 8, 9, 19, 21),
+                        y: 6917
+                      },{
+                        x: new Date(2018, 1, 8, 10, 7, 46),
+                        y: 6817
+                      },{
+                        x: new Date(2018, 1, 12, 12, 27, 54),
+                        y: 6504
+                      },{
+                        x: new Date(2018, 1, 13, 12, 46, 11),
+                        y: 6507
+                      },{
+                        x: new Date(2018, 1, 15, 10, 17, 43),
+                        y: 6671
+                      },{
+                        x: new Date(2018, 1, 15, 14, 12, 0),
+                        y: 6667
+                      },{
+                        x: new Date(2018, 1, 15, 21, 43, 51),
+                        y: 6673
+                      },{
+                        x: new Date(2018, 1, 16, 15, 59, 41),
+                        y: 6613
+                      },{
+                        x: new Date(2018, 1, 16, 21, 19, 30),
+                        y: 7163
+                      },{
+                        x: new Date(2018, 1, 19, 13, 53, 52),
+                        y: 7166
+                      },{
+                        x: new Date(2018, 1, 20, 8, 29, 51),
+                        y: 6765
+                      },{
+                        x: new Date(2018, 1, 20, 13, 48, 0),
+                        y: 7595
+                      },{
+                        x: new Date(2018, 1, 21, 9, 45, 0),
+                        y: 7618
+                      },{
+                        x: new Date(2018, 1, 21, 20, 34, 50),
+                        y: 7856
+                      },{
+                        x: new Date(2018, 1, 22, 15, 0, 23),
+                        y: 8162
+                      },{
+                        x: new Date(2018, 1, 23, 12, 1, 40),
+                        y: 8255
+                      },{
+                        x: new Date(2018, 1, 24, 14, 36, 19),
+                        y: 8276
+                      },{
+                        x: new Date(2018, 1, 27, 14, 37, 44),
+                        y: 8349
+                      },{
+                        x: new Date(2018, 1, 27, 22, 8, 3),
+                        y: 8797
+                      },{
+                        x: new Date(2018, 2, 1, 16, 31, 43),
+                        y: 9380
+                      },{
+                        x: new Date(2018, 2, 2, 13, 26, 1),
+                        y: 9571
+                      },{
+                        x: new Date(2018, 2, 2, 13, 47, 57),
+                        y: 9756
+                      },{
+                        x: new Date(2018, 2, 12, 12, 36, 39),
+                        y: 10892
+                      },{
+                        x: new Date(2018, 2, 12, 16, 50, 47),
+                        y: 8626
+                      },{
+                        x: new Date(2018, 2, 13, 9, 26, 41),
+                        y: 8656
+                      },{
+                        x: new Date(2018, 2, 13, 21, 35, 31),
+                        y: 8764
+                      },{
+                        x: new Date(2018, 2, 14, 12, 32, 28),
+                        y: 8865
+                      },{
+                        x: new Date(2018, 2, 14, 15, 20, 21),
+                        y: 8756
+                      },{
+                        x: new Date(2018, 2, 15, 18, 5, 56),
+                        y: 8962
+                      },{
+                        x: new Date(2018, 2, 19, 16, 36, 49),
+                        y: 8599
+                      },{
+                        x: new Date(2018, 2, 21, 15, 9, 38),
+                        y: 9957
+                      },{
+                        x: new Date(2018, 2, 23, 9, 43, 42),
+                        y: 10194
+                      },{
+                        x: new Date(2018, 2, 26, 12, 3, 3),
+                        y: 10528
+                      },{
+                        x: new Date(2018, 2, 26, 12, 53, 29),
+                        y: 10528
+                      },{
+                        x: new Date(2018, 2, 26, 14, 7, 4),
+                        y: 10540
+                      },{
+                        x: new Date(2018, 2, 27, 9, 41, 53),
+                        y: 10683
+                      },{
+                        x: new Date(2018, 2, 27, 15, 28, 44),
+                        y: 11044
+                      },{
+                        x: new Date(2018, 2, 27, 15, 38, 19),
+                        y: 11044
+                      }
+                    ]
+                }
+          ]
+      },
+
+      // Configuration options go here
+      options: {
+        tooltips: {
+            footerFontStyle: "normal",
+            bodyFontSize: 14,
+            titleMarginBottom: 14,
+            footerMarginTop: 12,
+            callbacks: {
+              label: function(tooltipItem, data) {
+                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                  return [label, tooltipItem.yLabel];
+              },
+                footer: function(tooltipItem, data) {
+                  var item = m_tooltipLabels[tooltipItem[0].datasetIndex][tooltipItem[0].index];
+                  var result = [];
+                  if (item.author) {
+                    result.push("Author: " + item.author);
+                  }
+                  if (item.plus_minus != undefined) {
+                    var r = "";
+                    if (item.plus_minus > 0) {
+                      r += "+";
+                    }
+                    r += item.plus_minus
+                    result.push(r);
+                  }
+                  result.push("Commit SHA: " + item.sha);
+                  result.push("Repository: " + item.owner + "/" + item.repo);
+                  return result;
+                }
+            }
+        },
+        elements: {
+          line: {
+            tension: 0
+          }
+        },
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+              unit: 'month',
+              unitStepSize: 1,
+              displayFormats: {
+                'month': 'MMM YYYY'
+              }
+            }
+          }],
+        },
+      }
+    });
+
+    // Link to commit on click.
+    document.getElementById('myChart').onclick = function(evt){
+      var activePoint = m_chart.getElementAtEvent(evt);
+      //console.log('activePoint', activePoint);
+      if (activePoint  && activePoint.length > 0) {
+        commitUrl = m_tooltipLabels[activePoint[0]._datasetIndex][activePoint[0]._index].commit_url;
+        //console.log("Commit URL: " + commitUrl);
+        if (commitUrl) {
+          window.open(commitUrl,'_blank');
+        }
+      }
+    };
+
+  }
+
+  function enableDisableAll() {
+    var is_hidden = m_chart.data.datasets[0].hidden;
+    for (var i = 0; i < m_chart.data.datasets.length; i++) {
+      m_chart.data.datasets[i].hidden = !is_hidden;
+    }
+    m_chart.update();
+  }
+
+window.onload = doStuff;
+</script>
+</head>
+<body>
+<div class="topDiv">
+<div class="titleDiv">
+SPOTIFY (LUIGI AND STIX)
+</div>
+<div class="toggleButtonDiv">
+<span class="btn" onclick="enableDisableAll()" style="float: right;">Toggle all lines on/off</span>
+</div>
+</div>
+<canvas id="myChart"></canvas>
+
+<br/><br/>
+
+Repositories:
+<ul>
+<li>spotify/luigi</li><li>spotify/styx</li>
+</ul>
+<br/>
+<span class="generatedSpan">Generated on 04/05/2018 13:35:17 by <a href="https://github.com/pferrot/contributors-stats" target="_blank">contributors-stats</a></span>
+</body>
+</html>

@@ -15,19 +15,21 @@ from requests import get
 from jinja2 import Environment, FileSystemLoader
 
 
-print ("GitHub Contributors stats")
-print ("-------------------------\n")
+print("GREVOSTATS")
+print("----------")
+print("GitHub Repositories Evolution Statistics")
+print("")
 
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
 schema_version = 2
 cache_folder = 'cache'
 output_folder = 'output'
-csv_additions = True
-csv_deletions = True
-csv_differences = True
-csv_totals = True
-csv_commits = True
+output_additions = True
+output_deletions = True
+output_differences = True
+output_totals = True
+output_commits = True
 csv_date_format = "%m/%d/%Y %H:%M:%S"
 email_to_author_file = None
 email_to_author = {}
@@ -45,21 +47,21 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-parser = argparse.ArgumentParser(description='Collect contributors statistics on specified GitHub repositories.')
-parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
-#parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help='Ignore commits with one of those files added.')
+parser = argparse.ArgumentParser(description='See how your GitHub repositories evolved and who contributed.')
+parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<commit_url_pattern>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
+parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help=argparse.SUPPRESS)
 parser.add_argument('-a', '--authors', type=str, nargs='*', help='Only outputs statistics for the specified authors (all authors by default).')
 parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='Folder where the generated CSV files are stored, default: \'%s\'.' % output_folder)
 parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='Folder where cache files are stored, default: \'%s\'.' % cache_folder)
-parser.add_argument('-cc', '--csv_commits', type=str2bool, nargs='?', default=True, help='Outputs nb commits in genereted CSV, default: yes.')
-parser.add_argument('-ca', '--csv_additions', type=str2bool, nargs='?', default=True, help='Outputs additions in genereted CSV, default: yes.')
-parser.add_argument('-cd', '--csv_deletions', type=str2bool, nargs='?', default=True, help='Outputs deletions in genereted CSV, default: yes.')
-parser.add_argument('-cdi', '--csv_differences', type=str2bool, nargs='?', default=True, help='Outputs differences (i.e. additions - deletions) in genereted CSV, default: yes.')
-parser.add_argument('-ct', '--csv_totals', type=str2bool, nargs='?', default=True, help='Outputs totals (i.e. additions + deletions) in genereted CSV, default: yes.')
+parser.add_argument('-oc', '--output_commits', type=str2bool, nargs='?', default=True, help='Outputs nb commits in genereted files, default: yes.')
+parser.add_argument('-oa', '--output_additions', type=str2bool, nargs='?', default=True, help='Outputs additions in genereted files, default: yes.')
+parser.add_argument('-od', '--output_deletions', type=str2bool, nargs='?', default=True, help='Outputs deletions in genereted files, default: yes.')
+parser.add_argument('-odi', '--output_differences', type=str2bool, nargs='?', default=True, help='Outputs differences (i.e. additions - deletions) in genereted files, default: yes.')
+parser.add_argument('-ot', '--output_totals', type=str2bool, nargs='?', default=True, help='Outputs totals (i.e. additions + deletions) in genereted files, default: yes.')
 parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % csv_date_format.replace('%', '%%'))
 parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
 parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
-parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'unknown\' if enabled, makes an error and stops processing otherwise, default: yes.')
+parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'%s\' if enabled, makes an error and stops processing otherwise, default: yes.' % unknown_username)
 parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors based on the number of (additions - deletions), default: keep all.')
@@ -600,29 +602,29 @@ if result and len(result) > 0:
         for author in sorted(result.keys(), key=str.lower):
             if args.authors and author not in args.authors:
                 authors_hidden[author] = 1
-            elif not args.authors or author in args.authors or not top_contributors or author in top_contributors:
+            elif not top_contributors or author in top_contributors:
                 authors_pos[author] = len(authors_pos.keys()) + 1
-                if args.csv_commits:
+                if args.output_commits:
                     row.append("%s (commits)" % author)
                     html_data["%s (commits)" % author] = {}
                     html_data["%s (commits)" % author]["data"] = []
                     html_data["%s (commits)" % author]["label"] = "%s (commits)" % author
-                if args.csv_additions:
+                if args.output_additions:
                     row.append("%s (additions)" % author)
                     html_data["%s (additions)" % author] = {}
                     html_data["%s (additions)" % author]["data"] = []
                     html_data["%s (additions)" % author]["label"] = "%s (additions)" % author
-                if args.csv_deletions:
+                if args.output_deletions:
                     row.append("%s (deletions)" % author)
                     html_data["%s (deletions)" % author] = {}
                     html_data["%s (deletions)" % author]["data"] = []
                     html_data["%s (deletions)" % author]["label"] = "%s (deletions)" % author
-                if args.csv_differences:
+                if args.output_differences:
                     row.append("%s (difference)" % author)
                     html_data["%s (difference)" % author] = {}
                     html_data["%s (difference)" % author]["data"] = []
                     html_data["%s (difference)" % author]["label"] = "%s (difference)" % author
-                if args.csv_totals:
+                if args.output_totals:
                     row.append("%s (total)" % author)
                     html_data["%s (total)" % author] = {}
                     html_data["%s (total)" % author]["data"] = []
@@ -632,31 +634,31 @@ if result and len(result) > 0:
 
         # Add fictive 'Total' user to see general trend.
         nb_fields_per_author = 0
-        if args.csv_commits:
+        if args.output_commits:
             row.append("%s (commits)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
             html_data["%s (commits)" % "TOTAL"] = {}
             html_data["%s (commits)" % "TOTAL"]["data"] = []
             html_data["%s (commits)" % "TOTAL"]["label"] = "%s (commits)" % "TOTAL"
-        if args.csv_additions:
+        if args.output_additions:
             row.append("%s (additions)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
             html_data["%s (additions)" % "TOTAL"] = {}
             html_data["%s (additions)" % "TOTAL"]["data"] = []
             html_data["%s (additions)" % "TOTAL"]["label"] = "%s (additions)" % "TOTAL"
-        if args.csv_deletions:
+        if args.output_deletions:
             row.append("%s (deletions)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
             html_data["%s (deletions)" % "TOTAL"] = {}
             html_data["%s (deletions)" % "TOTAL"]["data"] = []
             html_data["%s (deletions)" % "TOTAL"]["label"] = "%s (deletions)" % "TOTAL"
-        if args.csv_differences:
+        if args.output_differences:
             row.append("%s (difference)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
             html_data["%s (difference)" % "TOTAL"] = {}
             html_data["%s (difference)" % "TOTAL"]["data"] = []
             html_data["%s (difference)" % "TOTAL"]["label"] = "%s (difference)" % "TOTAL"
-        if args.csv_totals:
+        if args.output_totals:
             row.append("%s (total)" % "TOTAL")
             nb_fields_per_author = nb_fields_per_author + 1
             html_data["%s (total)" % "TOTAL"] = {}
@@ -711,31 +713,31 @@ if result and len(result) > 0:
                 #row.append(one_result["stats"]["additions"])
                 #row.append(one_result["stats"]["deletions"])
                 #row.append(one_result["stats"]["total"])
-                if args.csv_commits:
+                if args.output_commits:
                     row.append(one_result["total_stats_author"]["nb_commits"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["nb_commits"]
                     h["plus_minus"] = 1
                     html_data["%s (commits)" % the_author]["data"].append(h)
-                if args.csv_additions:
+                if args.output_additions:
                     row.append(one_result["total_stats_author"]["additions"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["additions"]
                     h["plus_minus"] = one_result["stats"]["additions"]
                     html_data["%s (additions)" % the_author]["data"].append(h)
-                if args.csv_deletions:
+                if args.output_deletions:
                     row.append(one_result["total_stats_author"]["deletions"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["deletions"]
                     h["plus_minus"] = one_result["stats"]["deletions"]
                     html_data["%s (deletions)" % the_author]["data"].append(h)
-                if args.csv_differences:
+                if args.output_differences:
                     row.append(one_result["total_stats_author"]["difference"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["difference"]
                     h["plus_minus"] = one_result["stats"]["difference"]
                     html_data["%s (difference)" % the_author]["data"].append(h)
-                if args.csv_totals:
+                if args.output_totals:
                     row.append(one_result["total_stats_author"]["total"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["total"]
@@ -764,31 +766,31 @@ if result and len(result) > 0:
             # copies of html_object.
             html_object["author"] = the_author;
 
-            if args.csv_commits:
+            if args.output_commits:
                 row.append(total_nb_commits)
                 h = copy.deepcopy(html_object)
                 h["y"] = total_nb_commits
                 h["plus_minus"] = 1
                 html_data["%s (commits)" % "TOTAL"]["data"].append(h)
-            if args.csv_additions:
+            if args.output_additions:
                 row.append(total_additions)
                 h = copy.deepcopy(html_object)
                 h["y"] = total_additions
                 h["plus_minus"] = one_result["stats"]["additions"]
                 html_data["%s (additions)" % "TOTAL"]["data"].append(h)
-            if args.csv_deletions:
+            if args.output_deletions:
                 row.append(total_deletions)
                 h = copy.deepcopy(html_object)
                 h["y"] = total_deletions
                 h["plus_minus"] = one_result["stats"]["deletions"]
                 html_data["%s (deletions)" % "TOTAL"]["data"].append(h)
-            if args.csv_differences:
+            if args.output_differences:
                 row.append(total_difference)
                 h = copy.deepcopy(html_object)
                 h["y"] = total_difference
                 h["plus_minus"] = one_result["stats"]["difference"]
                 html_data["%s (difference)" % "TOTAL"]["data"].append(h)
-            if args.csv_totals:
+            if args.output_totals:
                 row.append(total_total)
                 h = copy.deepcopy(html_object)
                 h["y"] = total_total
