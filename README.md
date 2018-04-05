@@ -158,8 +158,8 @@ Processing: https://api.github.com/repos/spotify/luigi/commits?sha=master&since=
     Done processing commits (total nb commits processed: 37)
 Processing: https://api.github.com/repos/spotify/styx/commits?sha=master&since=2018-01-01T00:00:00Z (repo 2 / 2)
     Cache found (file: cache/f8e706d88f3e8cb3bf278e1823a2fd4a71a26e7c)
-    Recovered 371 commits from cache
-    Done processing commits (total nb commits processed: 372)
+    Recovered 375 commits from cache
+    Done processing commits (total nb commits processed: 376)
 Processing '<unknown>' user data
     Author could not be found (email: ben.sully@dwp.gsi.gov.uk, name: Ben Sully)
         Continuing as user '<unknown>' is allowed
@@ -176,8 +176,9 @@ Calculating top contributors
         Tarrasch
         tmattio
         yonromai
-Output file generated: output/spotify_(luigi_and_stix)_20180405152259.csv
-Output file generated: output/spotify_(luigi_and_stix)_20180405152259.html
+Output file generated: output/spotify_(luigi_and_stix)_20180405163129.csv
+total_nb_points: 143
+Output file generated: output/spotify_(luigi_and_stix)_20180405163129.html
     Total nb authors: 23
     Stats for the following authors are not included:
         <unknown>
@@ -198,6 +199,6 @@ Done.
 ```
 
 You can have a look at the generated files in the [docs](docs) folder.
-You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405152259.html">here</a> (screenshot below).
+You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405163129.html">here</a> (screenshot below).
 
-<a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405152259.html"><img src="docs/spotify_(luigi_and_stix).png"/></a>
+<a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405163129.html"><img src="docs/spotify_(luigi_and_stix).png"/></a>

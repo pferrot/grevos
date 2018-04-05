@@ -820,8 +820,7 @@ if result and len(result) > 0:
         if args.max_points_html:
             total_nb_points = 0
             for hdv in html_data_values:
-                for h in hdv["data"]:
-                    total_nb_points = total_nb_points + len(h)
+                total_nb_points = total_nb_points + len(h)
             if total_nb_points > args.max_points_html:
                 max_points_divide_factor = int(total_nb_points / args.max_points_html)
 
