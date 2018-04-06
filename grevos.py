@@ -1,7 +1,8 @@
-'''
-Usage:
-Just run with the necessary arguments (-h for details).
-'''
+#!/usr/bin/env python
+"""GREVOS -  generate combined activity graphs any number of GitHub repositories.
+
+https://github.com/pferrot/grevos
+"""
 import json
 import argparse
 import re
@@ -14,30 +15,34 @@ import copy
 from requests import get
 from jinja2 import Environment, FileSystemLoader
 
-
-print("GREVOS")
-print("------\n")
+#######################################################################
+# Global variables.
 
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
-schema_version = 2
-cache_folder = 'cache'
-output_folder = 'output'
-output_additions = True
-output_deletions = True
-output_differences = True
-output_totals = True
-output_commits = True
-csv_date_format = "%m/%d/%Y %H:%M:%S"
-email_to_author_file = None
-email_to_author = {}
-name_to_author_file = None
-name_to_author = {}
-unknown_username = "<unknown>"
-commits_to_ignore_separator = "-"
-now = datetime.datetime.now()
+m_schema_version = 2
+m_cache_folder = 'cache'
+m_output_folder = 'output'
+m_csv_date_format = "%m/%d/%Y %H:%M:%S"
+m_email_to_author_file = None
+m_email_to_author = {}
+m_name_to_author_file = None
+m_name_to_author = {}
+m_unknown_username = "<unknown>"
+m_commits_to_ignore_separator = "-"
+m_now = datetime.datetime.now()
+m_epoch = datetime.datetime.utcfromtimestamp(0)
+
+#######################################################################
+# All methods defined first. See entry point at the end of the file.
 
 def str2bool(v):
+    """Return the Boolean value corresponding to a String.
+
+    'yes', 'true', 't', 'y', '1' (case insensitive) will return True.
+    'no', 'false', 'f', 'n', '0' (case insensitive) will return false.
+    Any other value will raise a argparse.ArgumentTypeError.
+    """
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
@@ -45,94 +50,27 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-parser = argparse.ArgumentParser(description='Generate combined activity graphs for any number of repositories.')
-parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<commit_url_pattern>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % commits_to_ignore_separator)
-parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help=argparse.SUPPRESS)
-parser.add_argument('-a', '--authors', type=str, nargs='*', help='Only outputs statistics for the specified authors (all authors by default).')
-parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='Folder where the generated CSV files are stored, default: \'%s\'.' % output_folder)
-parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='Folder where cache files are stored, default: \'%s\'.' % cache_folder)
-parser.add_argument('-oc', '--output_commits', type=str2bool, nargs='?', default=True, help='Outputs nb commits in genereted files, default: yes.')
-parser.add_argument('-oa', '--output_additions', type=str2bool, nargs='?', default=True, help='Outputs additions in genereted files, default: yes.')
-parser.add_argument('-od', '--output_deletions', type=str2bool, nargs='?', default=True, help='Outputs deletions in genereted files, default: yes.')
-parser.add_argument('-odi', '--output_differences', type=str2bool, nargs='?', default=True, help='Outputs differences (i.e. additions - deletions) in genereted files, default: yes.')
-parser.add_argument('-ot', '--output_totals', type=str2bool, nargs='?', default=True, help='Outputs totals (i.e. additions + deletions) in genereted files, default: yes.')
-parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % csv_date_format.replace('%', '%%'))
-parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
-parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
-parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'%s\' if enabled, makes an error and stops processing otherwise, default: yes.' % unknown_username)
-parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
-parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
-parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors based on the number of (additions - deletions), default: keep all.')
-parser.add_argument('-mph', '--max_points_html', type=int, nargs='?', help='Maximum number of points in the HTML output. A graph with too many points will not offer a good user experience.')
-
-
-args = parser.parse_args()
-
-if not args.file:
-    print ('file not specified (use -h for details)')
-    exit(1)
-elif len(args.file) != 1:
-    print ('one single source file allowed (use -h for details)')
-    exit(1)
-elif not os.path.exists(args.file[0]):
-    print ('file does not exist: %s' % args.file[0])
-    exit(1)
-if args.output_folder:
-    output_folder = args.output_folder
-if args.cache_folder:
-    cache_folder = args.cache_folder
-if args.csv_date_format:
-    csv_date_format = args.csv_date_format
-if args.email_to_author_file:
-    if not os.path.exists(args.email_to_author_file):
-        print ('file does not exist: %s' % args.email_to_author_file)
-        exit(1)
-    email_to_author_file = args.email_to_author_file
-if args.name_to_author_file:
-    if not os.path.exists(args.name_to_author_file):
-        print ('file does not exist: %s' % args.name_to_author_file)
-        exit(1)
-    name_to_author_file = args.name_to_author_file
-if args.top_contributors != None:
-    if args.top_contributors < 1:
-        print ('number of top contributors must be a positive integer')
-        exit(1)
-if args.max_points_html != None:
-    if args.max_points_html < 1:
-        print ('max number of points in HTML must be a positive integer')
-        exit(1)
-
-print ("Source file: %s" % args.file[0])
-print ("Output folder: %s" % output_folder)
-print ("Cache folder: %s" % cache_folder)
-#print ("CSV date format: %s" % csv_date_format)
-if email_to_author_file:
-    print ("Email to author file: %s" % email_to_author_file)
-    eof_reader = csv.reader(open(email_to_author_file, newline=''), delimiter=',', quotechar='|')
-    for row in eof_reader:
-        if (len(row) != 2):
-            print ('wrong file format: %s (line: %s)' % (args.email_to_author_file, ",".join(row)))
-            exit(1)
-        email_to_author[row[0].lower()] = row[1]
-if name_to_author_file:
-    print ("Name to author file: %s" % name_to_author_file)
-    eof_reader = csv.reader(open(name_to_author_file, newline=''), delimiter=',', quotechar='|')
-    for row in eof_reader:
-        if (len(row) != 2):
-            print ('wrong file format: %s (line: %s)' % (args.name_to_author_file, ",".join(row)))
-            exit(1)
-        name_to_author[row[0].lower()] = row[1]
-
-direct_dependencies_cache = {}
-recursive_dependencies_cache = {}
-
-
-epoch = datetime.datetime.utcfromtimestamp(0)
-
 def unix_time_millis(dt):
-    return (dt - epoch).total_seconds() * 1000
+    """Return the UNIX Epoch time of a given datetime.
+    """
+    return (dt - m_epoch).total_seconds() * 1000
 
 def get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_token):
+    """Return the details of a given commit SHA, as a JSON object.
+
+    Example:
+    {
+        "stats" : {
+            "additions" : 23,
+            "deletions" : 12,
+            "total"     : 35,
+            "difference": 11
+        },
+        "date": W2011-04-14T16:00:49Z"
+    }
+
+    Return None in case the GitHub API returns anything else than a 200 status code.
+    """
     url = "%s%s%s/repos/%s/%s/commits/%s" % (scheme, host, base_path, owner, repo, commit_sha)
     #print (url)
     headers = \
@@ -168,17 +106,27 @@ def get_commit_details(scheme, host, base_path, owner, repo, commit_sha, git_tok
         print ("    Erreur retrieving commit (status code: %d) at %s" % (status_code, url))
         return None
 
-def remove_commits_to_ignore(r, commits_to_ignore):
+def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, commits_to_ignore):
+    """Removes commits listed in commits_to_ignore or those with too many lines added/removed from a given result set and returns it.
+
+    min_commit_difference in an integer. Commits with a 'difference' value greater than that value are removed.
+    max_commit_difference is an integer. Commits with a 'difference' value lower than that value are removed.
+    commits_to_ignore is a list of commits SHA. Commits with a 'sha' contained in that list are removed.
+
+    If min_commit_difference in None, then no check is done on the minimum value of the 'difference' metric.
+    If max_commit_difference in None, then no check is done on the maximum value of the 'difference' metric.
+    If commits_to_ignore is None, then no check is done on the value of the 'sha' of the commit.
+    """
     if r and len(r.keys()) and commits_to_ignore and len(commits_to_ignore) > 0:
         print("Removing commits to ignore")
         for k in r.keys():
             author_data = r[k]
             to_remove_indexes = []
             for idx, x  in enumerate(author_data):
-                if "stats" in x and "difference" in x["stats"] and args.max_commit_difference != None and x["stats"]["difference"] > args.max_commit_difference:
+                if "stats" in x and "difference" in x["stats"] and max_commit_difference != None and x["stats"]["difference"] > max_commit_difference:
                     print("    Removing commit because it is above the max difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
                     to_remove_indexes.append(idx)
-                elif "stats" in x and "difference" in x["stats"] and args.min_commit_difference != None and x["stats"]["difference"] < args.min_commit_difference :
+                elif "stats" in x and "difference" in x["stats"] and min_commit_difference != None and x["stats"]["difference"] < min_commit_difference :
                     print("    Removing commit because it is below the min difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
                     to_remove_indexes.append(idx)
                 elif "sha" in x and x["sha"] in commits_to_ignore:
@@ -188,10 +136,62 @@ def remove_commits_to_ignore(r, commits_to_ignore):
                 del author_data[idx]
     return r
 
-def populate_totals(the_array):
-    if the_array:
+def populate_totals(the_list):
+    """Adds a 'total_stats_author' object to every item in the_list.
+
+    the_list is a list of JSON objects, sorted chronologically, each JSON representing a commit
+    made by a given author. All items in the list belong to the same author.
+
+    Example item before processing:
+    {
+        "sha": "6b9b8c59703560f197c71adfe0ac9770cfeffb33",
+        "date": "2011-04-14T16:00:49Z",
+        "date_unix": "1302796849000.0",
+        "author": "jdoe",
+        "author_name": "John Doe",
+        "author_email": "jdoe@testmail.com",
+        "owner": "MyOrg",
+        "repo": "MyRepo",
+        "stats" : {
+            "additions" : 23,
+            "deletions" : 12,
+            "total"     : 35,
+            "difference": 11
+        }
+    }
+
+    After processing:
+    {
+        "sha": "6b9b8c59703560f197c71adfe0ac9770cfeffb33",
+        "date": "2011-04-14T16:00:49Z",
+        "date_unix": "1302796849000.0",
+        "author": "jdoe",
+        "author_name": "John Doe",
+        "author_email": "jdoe@testmail.com",
+        "owner": "MyOrg",
+        "repo": "MyRepo",
+        "stats" : {
+            "additions" : 23,
+            "deletions" : 12,
+            "total"     : 35,
+            "difference": 11
+        },
+        "total_stats_author" : {
+            "nb_commits": 12
+            "additions" : 734,
+            "deletions" : 423,
+            "total"     : 1157,
+            "difference": 311
+        },
+    }
+
+    where 'total_stats_author' shows the sum of all items in the list until the
+    current item (inclusive). So in the example above, the item is the 12th item
+    in the list (since nb_commits == 12).
+    """
+    if the_list:
         previous = None
-        for one_item in the_array:
+        for one_item in the_list:
             total_stats_author = {}
             if not previous:
                 total_stats_author["nb_commits"] = 1
@@ -207,56 +207,98 @@ def populate_totals(the_array):
                 total_stats_author["total"] = previous["total_stats_author"]["total"] + one_item["stats"]["total"]
             one_item["total_stats_author"] = total_stats_author
             previous = one_item
-        return the_array
+        return the_list
     else:
-        return the_array
+        return the_list
 
-def get_csv_output_filename():
-    return get_output_filename("csv")
+def get_csv_output_filename(source_file_full_path):
+    """Returns the filename of the generated CSV file.
+    """
+    return get_output_filename(source_file_full_path, "csv")
 
-def get_html_output_filename():
-    return get_output_filename("html")
+def get_html_output_filename(source_file_full_path):
+    """Returns the filename of the generated HTML file.
+    """
+    return get_output_filename(source_file_full_path, "html")
 
-def get_output_filename(extension):
-    base_name = os.path.basename(args.file[0])
+def get_output_filename(source_file_full_path, extension):
+    """Returns the filename of a generated file file with the given extension.
+    """
+    base_name = os.path.basename(source_file_full_path)
     if base_name.find('.') > 0:
         base_name = base_name[:base_name.find('.')]
-    return '%s_%s.%s' % (base_name, now.strftime("%Y%m%d%H%M%S"), extension)
+    return '%s_%s.%s' % (base_name, m_now.strftime("%Y%m%d%H%M%S"), extension)
 
-def get_html_title():
-    base_name = os.path.basename(args.file[0])
+def get_html_title(source_file_full_path):
+    """Returns the title to be used in the generated HTML file.
+
+    The title is the source filename without extension, with '_' characters
+    replaced by whitespaces and all uppercase.
+    """
+    base_name = os.path.basename(source_file_full_path)
     if base_name.find('.') > 0:
         base_name = base_name[:base_name.find('.')]
     return base_name.replace('_', ' ').replace('-', ' ').upper()
 
-def get_csv_output_filename_with_path():
-    return get_filename_with_path(get_csv_output_filename(), output_folder)
+def get_csv_output_filename_with_path(source_file_full_path):
+    """Returns the filename with path of the generated CSV file.
 
-def get_html_output_filename_with_path():
-    return get_filename_with_path(get_html_output_filename(), output_folder)
+    The path is specified by the end user (default: 'output').
+    """
+    return get_filename_with_path(get_csv_output_filename(source_file_full_path), m_output_folder)
+
+def get_html_output_filename_with_path(source_file_full_path):
+    """Returns the filename with path of the generated HTML file.
+
+    The path is specified by the end user (default: 'output').
+    """
+    return get_filename_with_path(get_html_output_filename(source_file_full_path), m_output_folder)
 
 def get_filename_with_path(filename, folder):
+    """Returns the filename with path, given the base filename and folder.
+    """
     return "%s%s%s" % (folder, "" if folder.endswith("/") else "/", filename)
 
 def get_cache_filename(url):
+    """Returns the filename of the cache file for a given URL.
+
+    The cache filename is the SHA1 of the GitHub URL used to retrieve the date, the files to be ignored
+    (although that feature is currently hidden/disabled) and the schema version.
+
+    Using a so called schema version allows to easily modify the data stored in the cache in future versions
+    as legacy cache files be ignored (because a different schema version will lead to a different
+    SHA1, i.e. different filename). This comes at the cost of having the fetch the data from GitHub again.
+    """
     # Important to take args.ignore_files into account as the result depends on this parameter.
-    cache_filename = hashlib.sha1(("%s%s%d" % (url, ",".join(args.ignore_files) if args.ignore_files else "", schema_version)).encode('utf-8')).hexdigest()
+    cache_filename = hashlib.sha1(("%s%s%d" % (url, ",".join(args.ignore_files) if args.ignore_files else "", m_schema_version)).encode('utf-8')).hexdigest()
     #print("Cache filename: %s" % cache_filename)
     return cache_filename
 
 def get_cache_filename_with_path(url):
-    return get_filename_with_path(get_cache_filename(url), cache_folder)
+    """Returns the filename (with full path) of the cache file for a given url.
 
-# Creates/overwrites the file with the given json.
+    See get_cache_filename(url) for more details.
+    """
+    return get_filename_with_path(get_cache_filename(url), m_cache_folder)
+
 def cache(url, the_json):
+    """Saves the given JSON in a local cache file (overwrites it if it exists already).
+    """
     #print ("    Caching: %s" % url)
     with open(get_cache_filename_with_path(url), 'w') as outfile:
         json.dump(the_json, outfile)
 
-# Returns a tuple (JSON, highest_date, sha, nb_commits), where highest_date is the date of the
-# most recent commit in the JSON and sha the SHA for that most recent commit.
-# Returns None if no cache file exists.
-def load_cache(url):
+
+def get_cache(url):
+    """Returns the cache for a given URL.
+
+    The resuls is a tuple (JSON, highest_date, sha, nb_commits) where highest_date is the
+    date of the most recent commit in the JSON and sha the SHA for that most recent commit.
+
+    Returns None if no cache file exists.
+
+    If an error occurs when reading the file, a message is logged and None is returned.
+    """
     cache_file = get_cache_filename_with_path(url)
     if not os.path.exists(cache_file):
         print("    No cache (file does not exist: %s)" % cache_file)
@@ -266,7 +308,7 @@ def load_cache(url):
         try:
             with open(cache_file) as json_data:
                 d = json.load(json_data)
-                merged_results = merge_results(d)
+                merged_results = merge_sort_results(d)
                 nb_commits = len(merged_results)
                 highest_date = None
                 sha = None
@@ -278,11 +320,48 @@ def load_cache(url):
                 return (d, highest_date, sha, nb_commits)
         except:
             print("    Error loading cache from file %s, so ignoring file" % cache_file)
+            return None
 
 
+def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token, index_repo, total_nb_repos):
+    """Returns a dictionary where the keys are the authors and the values a list of their commits
+    for a given repo defined by its scheme, host, base_path, owner and repo.
 
+    git_token is a valid GitHub API token wth read access to the repository.
+    index_repo and total_nb_repos and simply specified to log progress information.
 
-def get_rep_stats(scheme, host, base_path, owner, repo, branch, commit_url_pattern, since, git_token, index_repo, total_nb_repos):
+    Simple example result with one single commit:
+    {
+        "jdoe": [
+            {
+                "sha": "6b9b8c59703560f197c71adfe0ac9770cfeffb33",
+                "date": "2011-04-14T16:00:49Z",
+                "date_unix": "1302796849000.0",
+                "author": "jdoe",
+                "author_name": "John Doe",
+                "author_email": "jdoe@testmail.com",
+                "owner": "MyOrg",
+                "repo": "MyRepo",
+                "stats" : {
+                    "additions" : 23,
+                    "deletions" : 12,
+                    "total"     : 35,
+                    "difference": 11
+                },
+                "total_stats_author" : {
+                    "nb_commits": 12
+                    "additions" : 734,
+                    "deletions" : 423,
+                    "total"     : 1157,
+                    "difference": 311
+                },
+            }
+        ]
+    }
+
+    Note that results are cached for future reuse. The cache will be udpated with new
+    commits everytime the method is called.
+    """
     next_url = "%s%s%s/repos/%s/%s/commits?sha=%s%s" % (scheme, host, base_path, owner, repo, branch, "&since=%s" % since if since else "")
     cache_url = next_url
     print ("Processing: %s (%s)" % (next_url, "repo %d / %d" % (index_repo, total_nb_repos)))
@@ -298,7 +377,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, commit_url_patte
     counter = 0
     result = {}
 
-    from_cache = load_cache(cache_url)
+    from_cache = get_cache(cache_url)
     cache_sha = None
     # We found something in cache and there is a date.
     if from_cache and from_cache[1]:
@@ -365,7 +444,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, commit_url_patte
                 #else:
                 #    print ("Author: %s" % author_login)
                 if not author_login:
-                    author_login = unknown_username
+                    author_login = m_unknown_username
                 one_result["author"] = author_login
                 if author_email:
                     one_result["author_email"] = author_email
@@ -432,7 +511,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, commit_url_patte
                 counter = counter + 1
                 if (counter % 20 == 0):
 
-                    print ("    Nb commits processed so far: %d (latest date: %s)" % (counter, datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ").strftime(csv_date_format)))
+                    print ("    Nb commits processed so far: %d (latest date: %s)" % (counter, datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ").strftime(m_csv_date_format)))
 
         else:
             print ("    Erreur retrieving commits (status code: %d) at %s" % (status_code, next_url))
@@ -443,34 +522,80 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, commit_url_patte
     return result
 
 def sort_results(r):
+    """Sorts a list containg commit information by date, thanks to the 'date_unix' field.
+
+    Example list with one item below. The result will have items sorted by 'date_unix' ascending.
+
+    [
+        {
+            "sha": "6b9b8c59703560f197c71adfe0ac9770cfeffb33",
+            "date": "2011-04-14T16:00:49Z",
+            "date_unix": "1302796849000.0",
+            "author": "jdoe",
+            "author_name": "John Doe",
+            "author_email": "jdoe@testmail.com",
+            "owner": "MyOrg",
+            "repo": "MyRepo",
+            "stats" : {
+                "additions" : 23,
+                "deletions" : 12,
+                "total"     : 35,
+                "difference": 11
+            }
+        }
+    ]
+    """
     return sorted(r, key=lambda k: k['date_unix'], reverse=False)
 
-def merge_results(r):
+def merge_sort_results(dict):
+    """Merges all values of a dict (which are lists) into one single list, then sorts it and returns it.
+
+    See sort_results(r) for details about sorting.
+    """
     result = []
-    for x in r.keys():
+    for x in dict.keys():
         #print ("X: %s" % x)
         #print (json.dumps(r[x], indent=4, sort_keys=True))
-        result.extend(r[x])
+        result.extend(dict[x])
     return sort_results(result)
 
 # appends r2 values to r1 values.
-def combine_results(r1, r2):
-    if not r1:
-        return r2
-    else:
-        for x in r2.keys():
-            if x in r1:
-                r1[x].extend(r2[x])
-            else:
-                r1[x] = r2[x]
-        return r1
+def combine_results(dict1, dict2):
+    """Adds dict2 values into dict1 and returns dict1.
 
-# Tries to find the actual user thanks to email/name mapping files.
-# Also reports an issue if unknown is not allowed and no mapping is found.
+    Both dictionaries have String as keys and List as values.
+    For all key/value in dict2:
+        - if the same key exists in dict1 then extend its value with the value in dict2.
+        - if dict1 does not contain that key, then add it with the value of the key in dict2.
+    Returns dict1 if dict2 is None.
+    """
+    if not dict1:
+        return dict2
+    else:
+        for x in dict2.keys():
+            if x in dict1:
+                dict1[x].extend(dict2[x])
+            else:
+                dict1[x] = dict2[x]
+        return dict1
+
 def process_unknown(r):
-    if unknown_username in r and r[unknown_username]:
-        print ("Processing '%s' user data" % unknown_username)
-        unknown_data = r[unknown_username]
+    """Identifies and processes commits with author '<unknown>' and processes them
+    according to the relevant parameters.
+
+    For every entry whose author is currently '<unknown>':
+    - If email to author or name to author files have been specified, then we try to
+      set the author to the mapping specified in that file (email takes precendence).
+    - If no mapping could be found and unknown authors are not allowed, then
+      report an error and stops processing.
+    - If no mapping could be found and unknown authors are allowed, then report
+      a warning and continue processing.
+    """
+    # Tries to find the actual user thanks to email/name mapping files.
+    # Also reports an issue if unknown is not allowed and no mapping is found.
+    if m_unknown_username in r and r[m_unknown_username]:
+        print ("Processing '%s' user data" % m_unknown_username)
+        unknown_data = r[m_unknown_username]
         new_unknown_data = []
         for x in unknown_data:
             author_login = None
@@ -480,19 +605,19 @@ def process_unknown(r):
                 author_email = x["author_email"]
             if "author_name" in x and x["author_name"]:
                 author_name = x["author_name"]
-            if author_email and author_email.lower() in email_to_author and email_to_author[author_email.lower()]:
-                author_login = email_to_author[author_email.lower()]
+            if author_email and author_email.lower() in m_email_to_author and m_email_to_author[author_email.lower()]:
+                author_login = m_email_to_author[author_email.lower()]
                 print("    Found author thanks to email to author file: %s --> %s" % (author_email, author_login))
-            elif not author_login and author_name.lower() in name_to_author and name_to_author[author_name.lower()]:
-                author_login = name_to_author[author_name.lower()]
+            elif not author_login and author_name.lower() in m_name_to_author and m_name_to_author[author_name.lower()]:
+                author_login = m_name_to_author[author_name.lower()]
                 print("    Found author thanks to name to author file: %s --> %s" % (author_name, author_login))
             else:
                 print("    Author could not be found (email: %s, name: %s)" % (author_email if author_email else "N/A", author_name if author_name else "N/A"))
                 if args.allow_unkwnown_author:
-                    print("        Continuing as user '%s' is allowed" % unknown_username)
+                    print("        Continuing as user '%s' is allowed" % m_unknown_username)
                     new_unknown_data.append(x)
                 else:
-                    print("        Stopping as user '%s' is not allowed" % unknown_username)
+                    print("        Stopping as user '%s' is not allowed" % m_unknown_username)
                     exit(1)
 
             if author_login:
@@ -502,31 +627,36 @@ def process_unknown(r):
                 r[author_login].append(x)
 
         if len(new_unknown_data) > 0:
-            r[unknown_username] = new_unknown_data
+            r[m_unknown_username] = new_unknown_data
         else:
-            r.pop(unknown_username)
+            r.pop(m_unknown_username)
 
     return r
 
-def get_top_contributors(r):
-    if not r or not len(r.keys()) or not args.top_contributors:
+def get_top_contributors(dict, nb):
+    """Returns a list containing the names of the nb top contibutors.
+
+    A contributor is evaulated by the total difference at its latest commit.
+    """
+    if not dict or not len(dict.keys()) or not nb:
         return None
     else:
         print("Calculating top contributors")
         max_contribs = []
-        for k in r.keys():
-            author_data = sort_results(r[k])
+        for k in dict.keys():
+            author_data = sort_results(dict[k])
             author_contrib = {}
             author_contrib["author"] = k
-            if "stats" in author_data and "difference" in author_data["stats"]:
-                print("Author % s max contrib: %d" % (k, author_data["stats"]["difference"]))
-                author_contrib["difference"] = author_data["stats"]["difference"]
+            if len(author_data) > 0 and "total_stats_author" in author_data[len(author_data) - 1] and "difference" in author_data[len(author_data) - 1]["total_stats_author"]:
+                print("    Author % s contrib: %d" % (k, author_data[len(author_data) - 1]["total_stats_author"]["difference"]))
+                author_contrib["difference"] = author_data[len(author_data) - 1]["total_stats_author"]["difference"]
             else:
-                author_contrib["difference"] = 0
+                #author_contrib["difference"] = 0
+                raise ValueError('Total statistics not found for author %s' % k)
             max_contribs.append(author_contrib)
         max_contribs = sorted(max_contribs, key=lambda k: k['difference'], reverse=True)
-        to_keep = max_contribs[:args.top_contributors]
-        no_keep = max_contribs[args.top_contributors:]
+        to_keep = max_contribs[:nb]
+        no_keep = max_contribs[nb:]
         if to_keep:
             print("    Top contributors (in alphabetical order):\n        %s" % "\n        ".join(sorted([i["author"] for i in to_keep], key=str.lower)))
         #if no_keep:
@@ -534,9 +664,101 @@ def get_top_contributors(r):
 
         return [i["author"] for i in to_keep]
 
+
+#######################################################################
+print("GREVOS")
+print("------\n")
+
+#######################################################################
+# argparse stuff to parse input parameters.
+
+parser = argparse.ArgumentParser(description='Generate combined activity graphs for any number of repositories.')
+parser.add_argument('-f', '--file', type=str, nargs=1, help='File containing the repos to process. Format: <scheme>,<host>,<base_path>,<org>,<repo>,<branch>,<commit_url_pattern>,<since>,<api_token>[,<commits_to_ignore>]. <commits_to_ignore> is a %s separated list of SHA commits.' % m_commits_to_ignore_separator)
+parser.add_argument('-i', '--ignore_files', type=str, nargs='*', help=argparse.SUPPRESS)
+parser.add_argument('-a', '--authors', type=str, nargs='*', help='Only outputs statistics for the specified authors (all authors by default).')
+parser.add_argument('-o', '--output_folder', type=str, nargs='?', help='Folder where the generated CSV files are stored, default: \'%s\'.' % m_output_folder)
+parser.add_argument('-c', '--cache_folder', type=str, nargs='?', help='Folder where cache files are stored, default: \'%s\'.' % m_cache_folder)
+parser.add_argument('-oc', '--output_commits', type=str2bool, nargs='?', default=True, help='Outputs nb commits in genereted files, default: yes.')
+parser.add_argument('-oa', '--output_additions', type=str2bool, nargs='?', default=True, help='Outputs additions in genereted files, default: yes.')
+parser.add_argument('-od', '--output_deletions', type=str2bool, nargs='?', default=True, help='Outputs deletions in genereted files, default: yes.')
+parser.add_argument('-odi', '--output_differences', type=str2bool, nargs='?', default=True, help='Outputs differences (i.e. additions - deletions) in genereted files, default: yes.')
+parser.add_argument('-ot', '--output_totals', type=str2bool, nargs='?', default=True, help='Outputs totals (i.e. additions + deletions) in genereted files, default: yes.')
+parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % m_csv_date_format.replace('%', '%%'))
+parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
+parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
+parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'%s\' if enabled, makes an error and stops processing otherwise, default: yes.' % m_unknown_username)
+parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
+parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
+parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors based on the number of (additions - deletions), default: keep all.')
+parser.add_argument('-mph', '--max_points_html', type=int, nargs='?', help='Maximum number of points in the HTML output. A graph with too many points will not offer a good user experience.')
+
+
+args = parser.parse_args()
+
+# Check/validate parameters.
+if not args.file:
+    print ('file not specified (use -h for details)')
+    exit(1)
+elif len(args.file) != 1:
+    print ('one single source file allowed (use -h for details)')
+    exit(1)
+elif not os.path.exists(args.file[0]):
+    print ('file does not exist: %s' % args.file[0])
+    exit(1)
+if args.output_folder:
+    m_output_folder = args.output_folder
+if args.cache_folder:
+    m_cache_folder = args.cache_folder
+if args.csv_date_format:
+    m_csv_date_format = args.csv_date_format
+if args.email_to_author_file:
+    if not os.path.exists(args.email_to_author_file):
+        print ('file does not exist: %s' % args.email_to_author_file)
+        exit(1)
+    m_email_to_author_file = args.email_to_author_file
+if args.name_to_author_file:
+    if not os.path.exists(args.name_to_author_file):
+        print ('file does not exist: %s' % args.name_to_author_file)
+        exit(1)
+    m_name_to_author_file = args.name_to_author_file
+if args.top_contributors != None:
+    if args.top_contributors < 1:
+        print ('number of top contributors must be a positive integer')
+        exit(1)
+if args.max_points_html != None:
+    if args.max_points_html < 1:
+        print ('max number of points in HTML must be a positive integer')
+        exit(1)
+
+print ("Source file: %s" % args.file[0])
+print ("Output folder: %s" % m_output_folder)
+print ("Cache folder: %s" % m_cache_folder)
+
+if m_email_to_author_file:
+    print ("Email to author file: %s" % m_email_to_author_file)
+    eof_reader = csv.reader(open(m_email_to_author_file, newline=''), delimiter=',', quotechar='|')
+    for row in eof_reader:
+        if (len(row) != 2):
+            print ('wrong file format: %s (line: %s)' % (m_email_to_author_file, ",".join(row)))
+            exit(1)
+        m_email_to_author[row[0].lower()] = row[1]
+if m_name_to_author_file:
+    print ("Name to author file: %s" % m_name_to_author_file)
+    eof_reader = csv.reader(open(m_name_to_author_file, newline=''), delimiter=',', quotechar='|')
+    for row in eof_reader:
+        if (len(row) != 2):
+            print ('wrong file format: %s (line: %s)' % (m_name_to_author_file, ",".join(row)))
+            exit(1)
+        m_name_to_author[row[0].lower()] = row[1]
+
+
+#######################################################################
+# Start of actual processing.
 result = None
 to_process = []
 repos_html = []
+
+# Read source files and do some validation.
 csv_reader = csv.reader(open(args.file[0], newline=''), delimiter=',', quotechar='|')
 for row in csv_reader:
     if len(row) < 9 or len(row) > 10:
@@ -551,24 +773,29 @@ if len(to_process) == 0:
 
 print("Nb repos to process: %d\n" % len(to_process))
 
+# Processes all entries in the source file.
 commits_to_ignore = []
 commits_url_patterns = {}
 for idx, row in enumerate(to_process, 1):
-    # Commits to ignore.
+    # Commits to ignore are optional.
     if len(row) == 10:
-         commits_to_ignore.extend(row[9].split(commits_to_ignore_separator))
+         commits_to_ignore.extend(row[9].split(m_commits_to_ignore_separator))
     owner = row[3]
     repo = row[4]
     commit_url_pattern = row[6]
-    a = get_rep_stats(row[0], row[1], row[2], owner, repo, row[5], row[6], row[7], row[8], idx, len(to_process))
+    a = get_rep_stats(row[0], row[1], row[2], owner, repo, row[5], row[7], row[8], idx, len(to_process))
     if commit_url_pattern:
         commits_url_patterns["%s/%s" % (owner, repo)] = commit_url_pattern
+    # If None is returned, something went wrong.
     if a == None:
         exit(1)
     result = combine_results(result, a)
 
+# Do the necessary post-processing.
+# Note that this is done *after* date from local cache is leveraged, i.e. we can
+# quickly generate graphs with different parameters while reusing the data in teh cache.
 result = process_unknown(result)
-result = remove_commits_to_ignore(result, commits_to_ignore)
+result = remove_commits_to_ignore(result, args.min_commit_difference, args.max_commit_difference, commits_to_ignore)
 
 # Sort and populate totals once all repos have been processed.
 for x in result:
@@ -579,24 +806,29 @@ for x in result:
     result[x] = a
 
 
-
-#print (json.dumps(result, indent=4, sort_keys=True))
-
+# Start generating the output files.
 if result and len(result) > 0:
-    output_filename = get_csv_output_filename_with_path()
-    with open(output_filename, 'w', newline='') as csvfile:
+
+    csv_output_filename = get_csv_output_filename_with_path(args.file[0])
+    with open(csv_output_filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         row = []
         row.append("Date")
-        #row.append("Author")
 
         authors_pos = {}
         authors_hidden = {}
 
-        top_contributors = get_top_contributors(result)
+        top_contributors = get_top_contributors(result, args.top_contributors)
 
+        # This object will be used to generate the HTML output, which is generated
+        # with a jinja2 template.
+        # It is a dictionary where the keys are basically the titles of the lines
+        # in the graph and the values are lists of data points with some extra details
+        # like label or commit SHA.
         html_data = {}
 
+        # Headers depends on the author to include and on the
+        # on the data to be included (additions, deletions,...).
         for author in sorted(result.keys(), key=str.lower):
             if args.authors and author not in args.authors:
                 authors_hidden[author] = 1
@@ -630,9 +862,10 @@ if result and len(result) > 0:
             else:
                 authors_hidden[author] = 1
 
-
-
-        # Add fictive 'Total' user to see general trend.
+        # Add fictive 'TOTAL' user to see general trend.
+        # This includes all commits, even those from the authors that are not displayed.
+        # It does not include hidden commits though (e.g. commits removed because too big
+        # or explicitely excluded).
         nb_fields_per_author = 0
         if args.output_commits:
             row.append("%s (commits)" % "TOTAL")
@@ -671,18 +904,25 @@ if result and len(result) > 0:
 
         writer.writerow(row)
 
+        # Totals for user TOTAL are calculated as we generate the CSV file.
         total_nb_commits = 0
         total_additions = 0
         total_deletions = 0
         total_difference = 0
         total_total = 0
 
-        for one_result in merge_results(result):
+        # Loop through all commits, ordered by date.
+        for one_result in merge_sort_results(result):
             the_author = one_result["author"]
 
             row = []
             the_date = datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ")
-            row.append(the_date.strftime(csv_date_format))
+            row.append(the_date.strftime(m_csv_date_format))
+
+            # This object will be deep copied for each line to generate in the graph
+            # for this author (e.g. the additions line if additions must be rendered, the
+            # deletions line if deletions must be rendered,...).
+            # Each deep copy has its own 'y' value obviously.
             html_object = {}
             html_object["year"] = the_date.year
             # -1 because months are 0-indexed in JavaScript.
@@ -700,6 +940,8 @@ if result and len(result) > 0:
             commit_url = None
             if owner_repo in commits_url_patterns:
                 commit_url = commits_url_patterns[owner_repo].replace("{{owner}}", one_result["owner"]).replace("{{repository}}", one_result["repo"]).replace("{{commit_sha}}", one_result["sha"])
+                # This allows to have a HREF link pointing to the actual GitHub commit page when clicking
+                # on the data point in the generated graph.
                 html_object["commit_url"] = commit_url
 
 
@@ -709,14 +951,13 @@ if result and len(result) > 0:
                     for y in range(0, nb_fields_per_author):
                         row.append("")
 
-                #row.append(one_result["author"])
-                #row.append(one_result["stats"]["additions"])
-                #row.append(one_result["stats"]["deletions"])
-                #row.append(one_result["stats"]["total"])
                 if args.output_commits:
                     row.append(one_result["total_stats_author"]["nb_commits"])
                     h = copy.deepcopy(html_object)
                     h["y"] = one_result["total_stats_author"]["nb_commits"]
+                    # The 'plus_minus' values allow to display the impact of a single
+                    # commit in the tooltip (the 'y' value is the sum over time, which
+                    # is what the graph shows).
                     h["plus_minus"] = 1
                     html_data["%s (commits)" % the_author]["data"].append(h)
                 if args.output_additions:
@@ -747,6 +988,7 @@ if result and len(result) > 0:
                 for x in range(authors_pos[the_author], len(authors_pos)):
                     for y in range(0, nb_fields_per_author):
                         row.append("")
+
             # We do not want to show users, still need to show totals, so fill
             # in all other users with empty stats.
             else:
@@ -754,16 +996,16 @@ if result and len(result) > 0:
                     for y in range(0, nb_fields_per_author):
                         row.append("")
 
-            # Add fictive 'Total' user to see general trend.
+            # Add fictive 'TOTAL' user to see general trend.
             total_nb_commits = total_nb_commits + 1
             total_additions = total_additions + one_result["stats"]["additions"]
             total_deletions = total_deletions + one_result["stats"]["deletions"]
             total_difference = total_difference + one_result["stats"]["difference"]
             total_total = total_total + one_result["stats"]["total"]
 
-
             # This will only add the 'autor' to TOTAL since we create deep
-            # copies of html_object.
+            # copies of html_object. It would be redundent to show it for
+            # every user at it is already displayed in the tooltip.
             html_object["author"] = the_author;
 
             if args.output_commits:
@@ -808,14 +1050,19 @@ if result and len(result) > 0:
 
             writer.writerow(row)
 
-        print("Output file generated: %s" % output_filename)
+        print("Output file generated: %s" % csv_output_filename)
 
         # Create the jinja2 environment.
-        # Notice the use of trim_blocks, which greatly helps control whitespace.
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('chart.html')
         html_data_values = list(html_data.values())
 
+        # This max_points_divide_factor allows to get close to the max number
+        # of points requested by the user, but we might have more or less, which
+        # is not big deal.
+        # Also, the technic we use to limit the number of points in the graph is to
+        # simply render one out of max_points_divide_factor, which is basic and might
+        # not properly show peaks and valleys. But that should be fine in most cases.
         max_points_divide_factor = 1
         if args.max_points_html:
             total_nb_points = 0
@@ -834,14 +1081,14 @@ if result and len(result) > 0:
         html_data_values.extend(total_values)
 
         output_from_parsed_template = template.render(labels_and_data=html_data_values,
-                                                      generation_date=now.strftime(csv_date_format),
+                                                      generation_date=m_now.strftime(m_csv_date_format),
                                                       repositories=sorted(repos_html, key=str.lower),
                                                       authors_hidden=sorted(authors_hidden.keys(), key=str.lower),
                                                       max_points_divide_factor=max_points_divide_factor,
-                                                      title=get_html_title())
+                                                      title=get_html_title(args.file[0]))
 
         # to save the results
-        html_output_filename = get_html_output_filename_with_path()
+        html_output_filename = get_html_output_filename_with_path(args.file[0])
         with open(html_output_filename, "w") as fh:
             fh.write(output_from_parsed_template)
 
@@ -851,6 +1098,6 @@ if result and len(result) > 0:
         if len(authors_hidden.keys()) > 0:
             print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(sorted(authors_hidden.keys(), key=str.lower)))
 
-exit_code = 0
 print ('\nDone.')
-exit(exit_code)
+# Everything went fine.
+exit(0)
