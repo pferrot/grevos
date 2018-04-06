@@ -158,47 +158,68 @@ Processing: https://api.github.com/repos/spotify/luigi/commits?sha=master&since=
     Done processing commits (total nb commits processed: 37)
 Processing: https://api.github.com/repos/spotify/styx/commits?sha=master&since=2018-01-01T00:00:00Z (repo 2 / 2)
     Cache found (file: cache/f8e706d88f3e8cb3bf278e1823a2fd4a71a26e7c)
-    Recovered 375 commits from cache
-    Done processing commits (total nb commits processed: 376)
+    Recovered 391 commits from cache
+    Done processing commits (total nb commits processed: 392)
 Processing '<unknown>' user data
     Author could not be found (email: ben.sully@dwp.gsi.gov.uk, name: Ben Sully)
         Continuing as user '<unknown>' is allowed
-Removing commits to ignore
 Calculating top contributors
+    Author andrewsmartin contrib: 10
+    Author Tarrasch contrib: 11
+    Author danthelion contrib: 4
+    Author honnix contrib: 1433
+    Author tmattio contrib: 0
+    Author switzer contrib: 2
+    Author Gr1f0n6x contrib: 71
+    Author himikof contrib: 0
+    Author yonromai contrib: 218
+    Author dmohns contrib: 116
+    Author jfeala contrib: 367
+    Author jamesmcm contrib: 57
+    Author nathantsoi contrib: 0
+    Author riga contrib: 4
+    Author pkaleta contrib: 6
+    Author fabriziodemaria contrib: 2427
+    Author Zatine contrib: 360
+    Author <unknown> contrib: 0
+    Author spotify-helios-ci-agent contrib: 0
+    Author NatashaL contrib: 2307
+    Author ulzha contrib: 821
+    Author danielnorberg contrib: 2836
+    Author bergman contrib: -4
     Top contributors (in alphabetical order):
-        andrewsmartin
-        danthelion
+        danielnorberg
         dmohns
+        fabriziodemaria
         Gr1f0n6x
-        himikof
         honnix
-        switzer
-        Tarrasch
-        tmattio
+        jfeala
+        NatashaL
+        ulzha
         yonromai
-Output file generated: output/spotify_(luigi_and_stix)_20180405163129.csv
-total_nb_points: 143
-Output file generated: output/spotify_(luigi_and_stix)_20180405163129.html
+        Zatine
+Output file generated: output/spotify_(luigi_and_stix)_20180406120936.csv
+Output file generated: output/spotify_(luigi_and_stix)_20180406120936.html
     Total nb authors: 23
     Stats for the following authors are not included:
         <unknown>
+        andrewsmartin
         bergman
-        danielnorberg
-        fabriziodemaria
+        danthelion
+        himikof
         jamesmcm
-        jfeala
-        NatashaL
         nathantsoi
         pkaleta
         riga
         spotify-helios-ci-agent
-        ulzha
-        Zatine
+        switzer
+        Tarrasch
+        tmattio
 
 Done.
 ```
 
 You can have a look at the generated files in the [docs](docs) folder.
-You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405163129.html">here</a> (screenshot below).
+You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180406120936.html">here</a> (screenshot below).
 
-<a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180405163129.html"><img src="docs/spotify_(luigi_and_stix).png"/></a>
+<a href="http://patriceferrot.com/grevos/spotify_(luigi_and_stix)_20180406120936.html"><img src="docs/spotify_(luigi_and_stix).png"/></a>
