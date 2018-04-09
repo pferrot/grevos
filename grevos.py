@@ -117,7 +117,7 @@ def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, co
     If max_commit_difference in None, then no check is done on the maximum value of the 'difference' metric.
     If commits_to_ignore is None, then no check is done on the value of the 'sha' of the commit.
     """
-    if r and len(r.keys()) and commits_to_ignore and len(commits_to_ignore) > 0:
+    if r and len(r.keys()) > 0:
         print("Removing commits to ignore")
         for k in r.keys():
             author_data = r[k]
@@ -129,7 +129,7 @@ def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, co
                 elif "stats" in x and "difference" in x["stats"] and min_commit_difference != None and x["stats"]["difference"] < min_commit_difference :
                     print("    Removing commit because it is below the min difference limit in %s/%s: %s (%d)" % (x["owner"], x["repo"], x["sha"], x["stats"]["difference"]))
                     to_remove_indexes.append(idx)
-                elif "sha" in x and x["sha"] in commits_to_ignore:
+                elif commits_to_ignore and len(commits_to_ignore) > 0 and "sha" in x and x["sha"] in commits_to_ignore:
                     print("    Removing commit to ignore in %s/%s: %s" % (x["owner"], x["repo"], x["sha"]))
                     to_remove_indexes.append(idx)
             for idx in reversed(to_remove_indexes):
