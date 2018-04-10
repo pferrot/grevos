@@ -25,6 +25,11 @@ div.topDiv, div.bottomDiv {
   width: 100%;
   position: relative;
 }
+div.chartHeaderDiv {
+  width: 100%;
+  position: relative;
+  padding-top: 40px;
+}
 div.footerDiv {
   clear: both;
 }
@@ -37,7 +42,14 @@ div.titleDiv {
   width: 50%;
   float: left;
   padding: 10px;
-  font-size: 23px;
+  font-size: 22px;
+  font-weight: bold;
+}
+div.mainTitleDiv {
+  width: 100%;
+  float: left;
+  padding: 10px;
+  font-size: 26px;
   font-weight: bold;
 }
 div.repoDiv {
@@ -61,13 +73,15 @@ span.generatedSpan {
 </script>
 <script type="text/javascript">
 
-var m_chart = undefined;
+var m_charts = {};
 
-var m_tooltipLabels = [];
-{% for ld in labels_and_data -%}
-m_tooltipLabels.push([]);
-{% for d in ld.data -%}
-{% if loop.index == 1 or loop.index == ld.data|length or loop.index % max_points_divide_factor == 0 %}
+var m_tooltipLabels = {};
+{% for chart in labels_and_data -%}
+m_tooltipLabels['{{ chart }}'] = [];
+{% for author in labels_and_data[chart]['authors'] -%}
+m_tooltipLabels['{{ chart }}'].push([]);
+{% for d in labels_and_data[chart]['authors'][author]['data'] -%}
+{% if loop.index == 1 or loop.index == labels_and_data[chart]['authors'][author]['data']|length or loop.index % max_points_divide_factor == 0 %}
 var dict = {"sha": "{{ d.sha }}", "repo": "{{ d.repo }}", "owner": "{{ d.owner }}" };
 {% if d.author is defined -%}
 dict["author"] = "{{ d.author }}";
@@ -78,44 +92,58 @@ dict["commit_url"] = "{{ d.commit_url }}";
 {% if d.plus_minus is defined -%}
 dict["plus_minus"] = "{{ d.plus_minus }}";
 {%- endif %}
-m_tooltipLabels[m_tooltipLabels.length-1].push(dict);
+m_tooltipLabels['{{ chart }}'][m_tooltipLabels['{{ chart }}'].length-1].push(dict);
 {% endif %}
+{%- endfor %}
 {%- endfor %}
 {%- endfor %}
 
 function doStuff() {
-  var ctx = document.getElementById('myChart').getContext('2d');
-  var my_palette = palette('mpn65', {{ labels_and_data|length }});
-  m_chart = new Chart(ctx, {
+  var ctx = undefined;
+  var my_palette = undefined;
+  var chart = undefined;
+
+  {% for chart in labels_and_data -%}
+  ctx = document.getElementById('chart_{{ chart }}').getContext('2d');
+  // We can use one single palette.
+  if (!my_palette) {
+    my_palette = palette('mpn65', Math.min({{ labels_and_data[chart]['authors']|length }}, 65));
+  }
+  chart = new Chart(ctx, {
       // The type of chart we want to create
       type: 'line',
-
       // The data for our dataset
       data: {
           datasets: [
-            {% for ld in labels_and_data -%}
+            {% for author in labels_and_data[chart]['authors'] -%}
                 {
-                    label: "{{ ld.label }}",
+                    label: "{{ labels_and_data[chart]['authors'][author].label }}",
                     // % 65 because there are only 65 colors available in the selected palette (mpn65).
                     borderColor: '#' + my_palette[{{ loop.index0 % 65}}],
                     backgroundColor: 'rgba(0, 0, 0, 0.0)',
                     data: [
-                      {% for d in ld.data -%}
-                      {% if loop.index == 1 or loop.index == ld.data|length or loop.index % max_points_divide_factor == 0 -%}
+                      {% for d in labels_and_data[chart]['authors'][author]['data'] -%}
+                      {% if loop.index == 1 or loop.index == labels_and_data[chart]['authors'][author]['data']|length or loop.index % max_points_divide_factor == 0 %}
                       {
                         x: new Date({{ d.year }}, {{ d.month }}, {{ d.day }}, {{ d.hours }}, {{ d.minutes }}, {{ d.seconds }}),
                         y: {{ d.y }}
-                      }{%- if loop.index < ld.data|length -%},{% endif %}
+                      }{%- if loop.index < labels_and_data[chart]['authors'][author]['data']|length -%},{% endif %}
                       {%- endif %}
                       {%- endfor %}
                     ]
-                }{%- if loop.index < labels_and_data|length -%},{% endif %}
+                }{%- if loop.index < labels_and_data[chart]['authors']|length -%},{% endif %}
             {%- endfor %}
           ]
       },
 
       // Configuration options go here
       options: {
+        title: {
+          // Title is displayed in the HTML.
+          display: false,
+          text : '{{ labels_and_data[chart]['title'] }}',
+          fontSize: 20
+        },
         tooltips: {
             footerFontStyle: "normal",
             bodyFontSize: 14,
@@ -127,7 +155,7 @@ function doStuff() {
                   return [label, tooltipItem.yLabel];
               },
                 footer: function(tooltipItem, data) {
-                  var item = m_tooltipLabels[tooltipItem[0].datasetIndex][tooltipItem[0].index];
+                  var item = m_tooltipLabels['{{ chart }}'][tooltipItem[0].datasetIndex][tooltipItem[0].index];
                   var result = [];
                   if (item.author) {
                     result.push("Author: " + item.author);
@@ -166,27 +194,30 @@ function doStuff() {
       }
     });
 
+    m_charts['{{ chart }}'] = chart;
+
     // Link to commit on click.
-    document.getElementById('myChart').onclick = function(evt){
-      var activePoint = m_chart.getElementAtEvent(evt);
+    document.getElementById('chart_{{ chart }}').onclick = function(evt){
+      var activePoint = m_charts['{{ chart }}'].getElementAtEvent(evt);
       //console.log('activePoint', activePoint);
       if (activePoint  && activePoint.length > 0) {
-        commitUrl = m_tooltipLabels[activePoint[0]._datasetIndex][activePoint[0]._index].commit_url;
+        commitUrl = m_tooltipLabels['{{ chart }}'][activePoint[0]._datasetIndex][activePoint[0]._index].commit_url;
         //console.log("Commit URL: " + commitUrl);
         if (commitUrl) {
           window.open(commitUrl,'_blank');
         }
       }
     };
+    {%- endfor %}
 
   }
 
-  function enableDisableAll() {
-    var is_hidden = m_chart.data.datasets[0].hidden;
-    for (var i = 0; i < m_chart.data.datasets.length; i++) {
-      m_chart.data.datasets[i].hidden = !is_hidden;
+  function enableDisableAll(chart) {
+    var is_hidden = m_charts[chart].data.datasets[0].hidden;
+    for (var i = 0; i < m_charts[chart].data.datasets.length; i++) {
+      m_charts[chart].data.datasets[i].hidden = !is_hidden;
     }
-    m_chart.update();
+    m_charts[chart].update();
   }
 
 window.onload = doStuff;
@@ -194,14 +225,27 @@ window.onload = doStuff;
 </head>
 <body>
 <div class="topDiv">
-<div class="titleDiv">
+<div class="mainTitleDiv">
 {{ title }}
 </div>
+</div>
+
+<br/><br/><br/><br/>
+<hr/>
+
+{% for chart in labels_and_data -%}
+<div class="chartHeaderDiv">
+<div class="titleDiv">
+{{ labels_and_data[chart].title }}
+</div>
 <div class="toggleButtonDiv">
-<span class="btn" onclick="enableDisableAll()" style="float: right;">Toggle all lines on/off</span>
+<span class="btn" onclick="enableDisableAll('{{ chart }}')" style="float: right;">Toggle all items on/off</span>
 </div>
 </div>
-<canvas id="myChart"></canvas>
+<canvas id="chart_{{ chart }}"></canvas>
+<br/><br/>
+<hr/>
+{%- endfor %}
 
 <br/><br/>
 
