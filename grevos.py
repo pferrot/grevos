@@ -666,6 +666,9 @@ def get_top_contributors(dict, nb):
         return [i["author"] for i in to_keep]
 
 def init_html_data(html_data, chart_type, title, author):
+    """Init the html_data object used for generting the HTML output for a
+    given chart_type and author. Returns the udpated html_data object.
+    """
     if not chart_type in html_data:
         html_data[chart_type] = {}
         html_data[chart_type]["authors"] = {}
@@ -677,6 +680,14 @@ def init_html_data(html_data, chart_type, title, author):
     return html_data
 
 def populate_html_date(html_data, html_object, chart_type, author, y, plus_minus):
+    """Adds an entry (i.e. data point) to the html_data object used for generting
+    the HTML output for a given chart_type and author. Returns the udpated html_data object.
+
+    Note that a deep copy of the given html_object is created and used instead of
+    using it directly.
+    TODO: this means that the current data structure contains a lot of duplicate
+    information and should be optimized/reworked.
+    """
     h = copy.deepcopy(html_object)
     h["y"] = y
     # The 'plus_minus' values allow to display the impact of a single
@@ -844,7 +855,7 @@ if result and len(result) > 0:
         # with a jinja2 template.
         # Example of what this object looks like is available in docs/html_data_example.json.
         # TODO: the current data structure contains a lot of duplicate information and should
-        # be reworked.
+        # be optimized/reworked.
         html_data = {}
 
 
