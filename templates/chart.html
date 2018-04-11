@@ -82,7 +82,7 @@ m_tooltipLabels['{{ chart }}'] = [];
 m_tooltipLabels['{{ chart }}'].push([]);
 {% for d in labels_and_data[chart]['authors'][author]['data'] -%}
 {% if loop.index == 1 or loop.index == labels_and_data[chart]['authors'][author]['data']|length or loop.index % max_points_divide_factor == 0 %}
-var dict = {"sha": "{{ d.sha }}", "repo": "{{ d.repo }}", "owner": "{{ d.owner }}" };
+var dict = {"sha": "{{ d.sha }}", "repo": "{{ d.repo }}", "owner": "{{ d.owner }}", "y": {{ d.y }} };
 {% if d.author is defined -%}
 dict["author"] = "{{ d.author }}";
 {%- endif %}
@@ -146,34 +146,34 @@ function doStuff() {
           fontSize: 20
         },
         tooltips: {
-            footerFontStyle: "normal",
-            bodyFontSize: 14,
-            titleMarginBottom: 14,
-            footerMarginTop: 12,
-            callbacks: {
-              label: function(tooltipItem, data) {
-                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
-                  return [label, tooltipItem.yLabel];
-              },
-                footer: function(tooltipItem, data) {
-                  var item = m_tooltipLabels['{{ chart }}'][tooltipItem[0].datasetIndex][tooltipItem[0].index];
-                  var result = [];
-                  if (item.author) {
-                    result.push("Author: " + item.author);
-                  }
-                  if (item.plus_minus != undefined) {
-                    var r = "";
-                    if (item.plus_minus > 0) {
-                      r += "+";
-                    }
-                    r += item.plus_minus
-                    result.push(r);
-                  }
-                  result.push("Commit SHA: " + item.sha);
-                  result.push("Repository: " + item.owner + "/" + item.repo);
-                  return result;
+          footerFontStyle: "normal",
+          bodyFontSize: 14,
+          titleMarginBottom: 14,
+          footerMarginTop: 12,
+          callbacks: {
+            label: function(tooltipItem, data) {
+                var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                return [label, tooltipItem.yLabel];
+            },
+            footer: function(tooltipItem, data) {
+              var item = m_tooltipLabels['{{ chart }}'][tooltipItem[0].datasetIndex][tooltipItem[0].index];
+              var result = [];
+              if (item.author) {
+                result.push("Author: " + item.author);
+              }
+              if (item.plus_minus != undefined) {
+                var r = "";
+                if (item.plus_minus > 0) {
+                  r += "+";
                 }
+                r += item.plus_minus
+                result.push(r);
+              }
+              result.push("Commit SHA: " + item.sha);
+              result.push("Repository: " + item.owner + "/" + item.repo);
+              return result;
             }
+          }
         },
         elements: {
           line: {
@@ -220,7 +220,12 @@ function doStuff() {
             data: [
               {% for author in labels_and_data[chart]['authors'] -%}
               {% if not loop.last or loop.index0 == 0 -%}
-              {{ labels_and_data[chart]['authors'][author]['data'][labels_and_data[chart]['authors'][author]['data']|length - 1]['y'] }}{%- if loop.index < labels_and_data[chart]['authors']|length - 1 -%},{% endif %}
+              {%- if labels_and_data[chart]['authors'][author]['data'][labels_and_data[chart]['authors'][author]['data']|length - 1]['y'] > 0 -%}
+              {{ labels_and_data[chart]['authors'][author]['data'][labels_and_data[chart]['authors'][author]['data']|length - 1]['y'] }}
+              {% else %}
+              0
+              {%- endif %}
+              {%- if loop.index < labels_and_data[chart]['authors']|length - 1 -%},{% endif %}
               {%- endif %}
               {%- endfor %}
             ],
@@ -253,7 +258,14 @@ function doStuff() {
             footerFontStyle: "normal",
             bodyFontSize: 14,
             titleMarginBottom: 14,
-            footerMarginTop: 12
+            footerMarginTop: 12,
+            callbacks: {
+              label: function(tooltipItem, data) {
+                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                  var item = m_tooltipLabels['{{ chart }}'][tooltipItem.datasetIndex][tooltipItem.index];
+                  return [label, item.y];
+              }
+            }
         }
       }
     });
