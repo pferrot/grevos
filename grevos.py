@@ -990,16 +990,16 @@ if result and len(result) > 0:
 
             if args.output_commits:
                 row.append(total_nb_commits)
-                html_date = populate_html_date(html_data, html_object, "nb_commits", m_total_username, total_nb_commits, one_result["stats"]["total"])
+                html_date = populate_html_date(html_data, html_object, "nb_commits", m_total_username, total_nb_commits, 1)
             if args.output_additions:
                 row.append(total_additions)
-                html_date = populate_html_date(html_data, html_object, "additions", m_total_username, total_additions, one_result["stats"]["total"])
+                html_date = populate_html_date(html_data, html_object, "additions", m_total_username, total_additions, one_result["stats"]["additions"])
             if args.output_deletions:
                 row.append(total_deletions)
-                html_date = populate_html_date(html_data, html_object, "deletions", m_total_username, total_deletions, one_result["stats"]["total"])
+                html_date = populate_html_date(html_data, html_object, "deletions", m_total_username, total_deletions, one_result["stats"]["deletions"])
             if args.output_differences:
                 row.append(total_difference)
-                html_date = populate_html_date(html_data, html_object, "difference", m_total_username, total_difference, one_result["stats"]["total"])
+                html_date = populate_html_date(html_data, html_object, "difference", m_total_username, total_difference, one_result["stats"]["difference"])
             if args.output_totals:
                 row.append(total_total)
                 html_date = populate_html_date(html_data, html_object, "total", m_total_username, total_total, one_result["stats"]["total"])
