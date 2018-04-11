@@ -1035,21 +1035,11 @@ if result and len(result) > 0:
         if args.max_points_html and html_data.keys():
             total_nb_points = 0
             temp_list = list(html_data.values())[0]["authors"]
-            for hdv in temp_list:
+            for hdv in temp_list.values():
                 if "data" in hdv:
                     total_nb_points = total_nb_points + len(hdv["data"])
             if total_nb_points > args.max_points_html:
                 max_points_divide_factor = int(total_nb_points / args.max_points_html)
-
-        # Sort so that users appear in alphabetical order in the HTML.
-        #for hdv in html_data.keys():
-
-        #total_values = html_data_values[-nb_fields_per_author:]
-        #total_values = sorted(total_values, key=lambda k: k['label'].lower(), reverse=False)
-        #html_data_values = html_data_values[:-nb_fields_per_author]
-        #html_data_values = sorted(html_data_values, key=lambda k: k['label'].lower(), reverse=False)
-        # We want TOTAL to appear last.
-        #html_data_values.extend(total_values)
 
         #print (json.dumps(html_data, indent=4, sort_keys=True))
 
