@@ -255,17 +255,21 @@ function doStuff() {
           fontSize: 20
         },
         tooltips: {
-            footerFontStyle: "normal",
-            bodyFontSize: 14,
-            titleMarginBottom: 14,
-            footerMarginTop: 12,
-            callbacks: {
-              label: function(tooltipItem, data) {
-                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
-                  var item = m_tooltipLabels['{{ chart }}'][tooltipItem.datasetIndex][tooltipItem.index];
-                  return [label, item.y];
-              }
+          footerFontStyle: "normal",
+          bodyFontSize: 14,
+          titleMarginBottom: 14,
+          footerMarginTop: 12,
+          callbacks: {
+            // We use a custom label to not show 0 when the value is negative, but the actual value.
+            // Indeed, we need to set 0 in the graph data in case of negative value (see above), otherwise
+            // the negative value is essentially treated as a positive, which makes the graph wrong.
+            label: function(tooltipItem, data) {
+                var label = data.labels[tooltipItem.index] || '';
+                var tooltip_data = m_tooltipLabels['{{ chart }}'][tooltipItem.index]
+                var item = tooltip_data[tooltip_data.length - 1];
+                return [label, item.y];
             }
+          }
         }
       }
     });
