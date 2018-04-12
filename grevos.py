@@ -20,7 +20,7 @@ from jinja2 import Environment, FileSystemLoader
 
 # Need to be manually updated. Should allow to prevent using old JSON cache
 # when the schema has been modified with a new version.
-m_schema_version = 2
+m_schema_version = 3
 m_cache_folder = 'cache'
 m_output_folder = 'output'
 m_csv_date_format = "%m/%d/%Y %H:%M:%S"
@@ -163,6 +163,7 @@ def populate_totals(the_list):
         "author_email": "jdoe@testmail.com",
         "owner": "MyOrg",
         "repo": "MyRepo",
+        "branch": "master",
         "stats" : {
             "additions" : 23,
             "deletions" : 12,
@@ -181,6 +182,7 @@ def populate_totals(the_list):
         "author_email": "jdoe@testmail.com",
         "owner": "MyOrg",
         "repo": "MyRepo",
+        "branch": "master",
         "stats" : {
             "additions" : 23,
             "deletions" : 12,
@@ -353,6 +355,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                 "author_email": "jdoe@testmail.com",
                 "owner": "MyOrg",
                 "repo": "MyRepo",
+                "branch": "master",
                 "stats" : {
                     "additions" : 23,
                     "deletions" : 12,
@@ -386,6 +389,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
         original_since_date = since_date
 
     counter = 0
+    nb_cache = 0
     result = {}
 
     from_cache = get_cache(cache_url)
@@ -399,6 +403,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
         result = from_cache[0]
         cache_sha = from_cache[2]
         counter = from_cache[3]
+        nb_cache = counter
         print("    Recovered %d commits from cache" % counter)
 
     while next_url:
@@ -509,6 +514,7 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
                             one_result['date_unix'] = unix_time_millis(d)
                             one_result['owner'] = owner
                             one_result['repo'] = repo
+                            one_result['branch'] = branch
                             if author_login in result:
                                 result[author_login].append(one_result)
                             else:
@@ -528,8 +534,10 @@ def get_rep_stats(scheme, host, base_path, owner, repo, branch, since, git_token
             print ("    Erreur retrieving commits (status code: %d) at %s" % (status_code, next_url))
             return None
 
+    # Only update cache if needed.
+    if (counter != nb_cache):
+        cache(cache_url, result)
     print ("    Done processing commits (total nb commits processed: %d)" % counter)
-    cache(cache_url, result)
     return result
 
 def sort_results(r):
@@ -547,6 +555,7 @@ def sort_results(r):
             "author_email": "jdoe@testmail.com",
             "owner": "MyOrg",
             "repo": "MyRepo",
+            "branch": "master",
             "stats" : {
                 "additions" : 23,
                 "deletions" : 12,
@@ -836,7 +845,7 @@ for row in csv_reader:
     if len(row) < 9 or len(row) > 10:
         print ('wrong file format: %s (line: %s)' % (args.file[0], ",".join(row)))
         exit(1)
-    repos_html.append("%s/%s" % (row[3], row[4]))
+    repos_html.append("%s/%s (%s)" % (row[3], row[4], row[5]))
     to_process.append(row)
 
 if len(to_process) == 0:
@@ -974,13 +983,14 @@ if result and len(result) > 0:
 
             html_object["owner"] = one_result["owner"]
             html_object["repo"] = one_result["repo"]
+            html_object["branch"] = one_result["branch"]
             html_object["sha"] = one_result["sha"]
             # We only 'author' to OTHERS and TOTAL It would be redundent to show it for
             # every user at it is already displayed in the tooltip.
             if is_others:
                 html_object["author"] = one_result["author"]
 
-            owner_repo = "%s/%s" % (one_result["owner"], one_result["repo"])
+            owner_repo = "%s/%s (%s)" % (one_result["owner"], one_result["repo"], one_result["branch"])
             commit_url = None
             if owner_repo in commits_url_patterns:
                 commit_url = commits_url_patterns[owner_repo].replace("{{owner}}", one_result["owner"]).replace("{{repository}}", one_result["repo"]).replace("{{commit_sha}}", one_result["sha"])
