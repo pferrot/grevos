@@ -1,6 +1,8 @@
 # GREVOS
 GREVOS is a simple Python command line tool for generating graphs showing the **combined** activity of any number of GitHub repositories.
 
+Live example available <a href="http://pferrot.github.io/grevos/drupal_20180412121215.html">here</a>.
+
 GitHub activity graphs are nice, but large projects are often composed of more than one single git repository. GREVOS generates activity graphs for any number of repositories, thus allowing to see the pace of the entire project and who contributes.
 
 ## Features
@@ -299,6 +301,6 @@ Done.
 ```
 
 You can have a look at the generated files in the [docs](docs) folder.
-You can even play with the generated HTML <a href="http://patriceferrot.com/grevos/drupal_20180412121215.html">here</a> (screenshot below).
+You can even play with the generated HTML <a href="http://pferrot.github.io/grevos/drupal_20180412121215.html">here</a> (screenshot below).
 
-<a href="http://patriceferrot.com/grevos/drupal_20180412121215.html"><img src="docs/drupal.png"/></a>
+<a href="http://pferrot.github.io/grevos/drupal_20180412121215.html"><img src="docs/drupal.png"/></a>
