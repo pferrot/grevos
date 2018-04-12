@@ -32,6 +32,10 @@ m_unknown_username = "<unknown>"
 m_commits_to_ignore_separator = "-"
 m_now = datetime.datetime.now()
 m_epoch = datetime.datetime.utcfromtimestamp(0)
+# OTHERS is used when only top contributors are displayed. In that case,
+# we still want to display how much the rest of the contributors contributed.
+m_others_username = "OTHERS"
+m_total_username = "TOTAL"
 
 #######################################################################
 # All methods defined first. See entry point at the end of the file.
@@ -119,6 +123,7 @@ def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, co
     """
     if r and len(r.keys()) > 0:
         print("Removing commits to ignore")
+        to_remove_authors = []
         for k in r.keys():
             author_data = r[k]
             to_remove_indexes = []
@@ -134,6 +139,12 @@ def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, co
                     to_remove_indexes.append(idx)
             for idx in reversed(to_remove_indexes):
                 del author_data[idx]
+            # If an author does not have any commit left, he must be removed.
+            if len(r[k]) == 0:
+                to_remove_authors.append(k)
+        for author in to_remove_authors:
+            if author in r:
+                r.pop(author)
     return r
 
 def populate_totals(the_list):
@@ -586,10 +597,10 @@ def process_unknown(r):
     For every entry whose author is currently '<unknown>':
     - If email to author or name to author files have been specified, then we try to
       set the author to the mapping specified in that file (email takes precendence).
-    - If no mapping could be found and unknown authors are not allowed, then
-      report an error and stops processing.
-    - If no mapping could be found and unknown authors are allowed, then report
-      a warning and continue processing.
+    - If no mapping could be found and name is available, then use name.
+    - If no mapping could be found and name is not available, then use email.
+    - If no mapping could be found and name is not available and email is not
+      available, then keep it as '<unknown>'.
     """
     # Tries to find the actual user thanks to email/name mapping files.
     # Also reports an issue if unknown is not allowed and no mapping is found.
@@ -598,7 +609,7 @@ def process_unknown(r):
         unknown_data = r[m_unknown_username]
         new_unknown_data = []
         for x in unknown_data:
-            author_login = None
+            author = None
             author_email = None
             author_name = None
             if "author_email" in x and x["author_email"]:
@@ -606,25 +617,25 @@ def process_unknown(r):
             if "author_name" in x and x["author_name"]:
                 author_name = x["author_name"]
             if author_email and author_email.lower() in m_email_to_author and m_email_to_author[author_email.lower()]:
-                author_login = m_email_to_author[author_email.lower()]
-                print("    Found author thanks to email to author file: %s --> %s" % (author_email, author_login))
-            elif not author_login and author_name.lower() in m_name_to_author and m_name_to_author[author_name.lower()]:
-                author_login = m_name_to_author[author_name.lower()]
-                print("    Found author thanks to name to author file: %s --> %s" % (author_name, author_login))
+                author = m_email_to_author[author_email.lower()]
+                #print("    Found author thanks to email to author file: %s --> %s (%s/%s: %s)" % (author_email, author, x["owner"], x["repo"], x["sha"]))
+            elif not author and author_name and author_name.lower() in m_name_to_author and m_name_to_author[author_name.lower()]:
+                author = m_name_to_author[author_name.lower()]
+                #print("    Found author thanks to name to author file: %s --> %s (%s/%s: %s)" % (author_name, author, x["owner"], x["repo"], x["sha"]))
+            elif not author and author_name:
+                author = author_name
+                #print("    No mapping found, using name: %s (%s/%s: %s)" % (author_name, x["owner"], x["repo"], x["sha"]))
+            elif not author and author_email:
+                author = author_email
+                #print("    No mapping found, using email: %s (%s/%s: %s)" % (author_email, x["owner"], x["repo"], x["sha"]))
             else:
-                print("    Author could not be found (email: %s, name: %s)" % (author_email if author_email else "N/A", author_name if author_name else "N/A"))
-                if args.allow_unkwnown_author:
-                    print("        Continuing as user '%s' is allowed" % m_unknown_username)
-                    new_unknown_data.append(x)
-                else:
-                    print("        Stopping as user '%s' is not allowed" % m_unknown_username)
-                    exit(1)
-
-            if author_login:
-                x["author"] = author_login
-                if not author_login in r:
-                    r[author_login] = []
-                r[author_login].append(x)
+                new_unknown_data.append(x)
+                print("    Author could not be found and no name or email available, keeping it as '%s' (%s/%s: %s)" % (m_unknown_username, x["owner"], x["repo"], x["sha"]))
+            if author:
+                x["author"] = author
+                if not author in r:
+                    r[author] = []
+                r[author].append(x)
 
         if len(new_unknown_data) > 0:
             r[m_unknown_username] = new_unknown_data
@@ -664,6 +675,69 @@ def get_top_contributors(dict, nb):
 
         return [i["author"] for i in to_keep]
 
+def replace_hidden_with_others(dict, top_contributors, authors_to_show):
+    """Returns a tuple with the updated dict and the list of removed contributors.
+
+    The first item is the dict udpated where all authors not in
+    top_contributors have been removed and replaced with one single OTHERS authors which
+    contains all their commits.
+
+    The second item is the list of authors who have been removed.
+    """
+    if not dict or not len(dict.keys()):
+        return (dict, [])
+    else:
+        print("Replacing authors to hide with %s" % m_others_username)
+        others_data = []
+        to_remove_authors = []
+        for k in dict.keys():
+            if (top_contributors != None and k not in top_contributors) or (authors_to_show != None and k not in authors_to_show):
+                others_data.extend(dict[k])
+                to_remove_authors.append(k)
+        if len(to_remove_authors) > 0:
+            print("    Replaced %d author(s)" % len(to_remove_authors))
+            for to_remove in to_remove_authors:
+                if to_remove in dict:
+                    dict.pop(to_remove)
+            if len(others_data) > 0:
+                # Do not forget to sort and recalculate totals that have changed obviously.
+                dict[m_others_username] = populate_totals(sort_results(others_data))
+        else:
+            print("    Nothing to do")
+
+        return (dict, to_remove_authors)
+
+def init_html_data(html_data, chart_type, title, author):
+    """Init the html_data object used for generting the HTML output for a
+    given chart_type and author. Returns the udpated html_data object.
+    """
+    if not chart_type in html_data:
+        html_data[chart_type] = {}
+        html_data[chart_type]["authors"] = {}
+        html_data[chart_type]["title"] = title
+    html_data[chart_type]["authors"][author] = {}
+    html_data[chart_type]["authors"][author]["data"] = []
+    html_data[chart_type]["authors"][author]["label"] = author
+
+    return html_data
+
+def populate_html_data(html_data, html_object, chart_type, author, y, plus_minus):
+    """Adds an entry (i.e. data point) to the html_data object used for generting
+    the HTML output for a given chart_type and author. Returns the udpated html_data object.
+
+    Note that a deep copy of the given html_object is created and used instead of
+    using it directly.
+    TODO: this means that the current data structure contains a lot of duplicate
+    information and should be optimized/reworked.
+    """
+    h = copy.deepcopy(html_object)
+    h["y"] = y
+    # The 'plus_minus' values allow to display the impact of a single
+    # commit in the tooltip (the 'y' value is the sum over time, which
+    # is what the graph shows).
+    h["plus_minus"] = plus_minus
+    html_data[chart_type]["authors"][author]["data"].append(h)
+    return html_data
 
 #######################################################################
 print("GREVOS")
@@ -686,7 +760,6 @@ parser.add_argument('-ot', '--output_totals', type=str2bool, nargs='?', default=
 parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % m_csv_date_format.replace('%', '%%'))
 parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
 parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
-parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'%s\' if enabled, makes an error and stops processing otherwise, default: yes.' % m_unknown_username)
 parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors based on the number of (additions - deletions), default: keep all.')
@@ -750,7 +823,6 @@ if m_name_to_author_file:
             print ('wrong file format: %s (line: %s)' % (m_name_to_author_file, ",".join(row)))
             exit(1)
         m_name_to_author[row[0].lower()] = row[1]
-
 
 #######################################################################
 # Start of actual processing.
@@ -816,87 +888,50 @@ if result and len(result) > 0:
         row.append("Date")
 
         authors_pos = {}
-        authors_hidden = {}
+        authors_hidden = []
 
-        top_contributors = get_top_contributors(result, args.top_contributors)
+
 
         # This object will be used to generate the HTML output, which is generated
         # with a jinja2 template.
-        # It is a dictionary where the keys are basically the titles of the lines
-        # in the graph and the values are lists of data points with some extra details
-        # like label or commit SHA.
+        # Example of what this object looks like is available in docs/html_data_example.json.
+        # TODO: the current data structure contains a lot of duplicate information and should
+        # be optimized/reworked.
         html_data = {}
 
-        # Headers depends on the author to include and on the
-        # on the data to be included (additions, deletions,...).
-        for author in sorted(result.keys(), key=str.lower):
-            if args.authors and author not in args.authors:
-                authors_hidden[author] = 1
-            elif not top_contributors or author in top_contributors:
-                authors_pos[author] = len(authors_pos.keys()) + 1
-                if args.output_commits:
-                    row.append("%s (commits)" % author)
-                    html_data["%s (commits)" % author] = {}
-                    html_data["%s (commits)" % author]["data"] = []
-                    html_data["%s (commits)" % author]["label"] = "%s (commits)" % author
-                if args.output_additions:
-                    row.append("%s (additions)" % author)
-                    html_data["%s (additions)" % author] = {}
-                    html_data["%s (additions)" % author]["data"] = []
-                    html_data["%s (additions)" % author]["label"] = "%s (additions)" % author
-                if args.output_deletions:
-                    row.append("%s (deletions)" % author)
-                    html_data["%s (deletions)" % author] = {}
-                    html_data["%s (deletions)" % author]["data"] = []
-                    html_data["%s (deletions)" % author]["label"] = "%s (deletions)" % author
-                if args.output_differences:
-                    row.append("%s (difference)" % author)
-                    html_data["%s (difference)" % author] = {}
-                    html_data["%s (difference)" % author]["data"] = []
-                    html_data["%s (difference)" % author]["label"] = "%s (difference)" % author
-                if args.output_totals:
-                    row.append("%s (total)" % author)
-                    html_data["%s (total)" % author] = {}
-                    html_data["%s (total)" % author]["data"] = []
-                    html_data["%s (total)" % author]["label"] = "%s (total)" % author
-            else:
-                authors_hidden[author] = 1
+        top_contributors = get_top_contributors(result, args.top_contributors)
+        (result, authors_hidden) = replace_hidden_with_others(result, top_contributors, args.authors)
 
-        # Add fictive 'TOTAL' user to see general trend.
+        # Note that we add fictive 'TOTAL' user to see general trend.
         # This includes all commits, even those from the authors that are not displayed.
         # It does not include hidden commits though (e.g. commits removed because too big
         # or explicitely excluded).
-        nb_fields_per_author = 0
-        if args.output_commits:
-            row.append("%s (commits)" % "TOTAL")
-            nb_fields_per_author = nb_fields_per_author + 1
-            html_data["%s (commits)" % "TOTAL"] = {}
-            html_data["%s (commits)" % "TOTAL"]["data"] = []
-            html_data["%s (commits)" % "TOTAL"]["label"] = "%s (commits)" % "TOTAL"
-        if args.output_additions:
-            row.append("%s (additions)" % "TOTAL")
-            nb_fields_per_author = nb_fields_per_author + 1
-            html_data["%s (additions)" % "TOTAL"] = {}
-            html_data["%s (additions)" % "TOTAL"]["data"] = []
-            html_data["%s (additions)" % "TOTAL"]["label"] = "%s (additions)" % "TOTAL"
-        if args.output_deletions:
-            row.append("%s (deletions)" % "TOTAL")
-            nb_fields_per_author = nb_fields_per_author + 1
-            html_data["%s (deletions)" % "TOTAL"] = {}
-            html_data["%s (deletions)" % "TOTAL"]["data"] = []
-            html_data["%s (deletions)" % "TOTAL"]["label"] = "%s (deletions)" % "TOTAL"
-        if args.output_differences:
-            row.append("%s (difference)" % "TOTAL")
-            nb_fields_per_author = nb_fields_per_author + 1
-            html_data["%s (difference)" % "TOTAL"] = {}
-            html_data["%s (difference)" % "TOTAL"]["data"] = []
-            html_data["%s (difference)" % "TOTAL"]["label"] = "%s (difference)" % "TOTAL"
-        if args.output_totals:
-            row.append("%s (total)" % "TOTAL")
-            nb_fields_per_author = nb_fields_per_author + 1
-            html_data["%s (total)" % "TOTAL"] = {}
-            html_data["%s (total)" % "TOTAL"]["data"] = []
-            html_data["%s (total)" % "TOTAL"]["label"] = "%s (total)" % "TOTAL"
+        authors = sorted(result.keys(), key=str.lower)
+
+        authors.append(m_total_username)
+        for author in authors:
+            authors_pos[author] = len(authors_pos.keys()) + 1
+            # Headers depends on the author to include and on the
+            # on the data to be included (additions, deletions,...).
+            if args.output_commits:
+                row.append("%s (commits)" % author)
+                html_data = init_html_data(html_data, "nb_commits", "Number of commits", author)
+            if args.output_additions:
+                row.append("%s (additions)" % author)
+                html_data = init_html_data(html_data, "additions", "Additions", author)
+            if args.output_deletions:
+                row.append("%s (deletions)" % author)
+                html_data = init_html_data(html_data, "deletions", "Deletions", author)
+            if args.output_differences:
+                row.append("%s (difference)" % author)
+                html_data = init_html_data(html_data, "difference", "Difference", author)
+            if args.output_totals:
+                row.append("%s (total)" % author)
+                html_data = init_html_data(html_data, "total", "Total", author)
+
+        nb_fields_per_author = sum([args.output_commits, args.output_additions, args.output_deletions, args.output_differences, args.output_totals])
+
+        #print("Nb fields per author: %d" % nb_fields_per_author)
 
         row.append("Repository")
         row.append("Commit SHA")
@@ -914,6 +949,11 @@ if result and len(result) > 0:
         # Loop through all commits, ordered by date.
         for one_result in merge_sort_results(result):
             the_author = one_result["author"]
+            is_others = the_author in authors_hidden
+
+            if is_others:
+                the_author = m_others_username
+
 
             row = []
             the_date = datetime.datetime.strptime(one_result["date"], "%Y-%m-%dT%H:%M:%SZ")
@@ -935,6 +975,10 @@ if result and len(result) > 0:
             html_object["owner"] = one_result["owner"]
             html_object["repo"] = one_result["repo"]
             html_object["sha"] = one_result["sha"]
+            # We only 'author' to OTHERS and TOTAL It would be redundent to show it for
+            # every user at it is already displayed in the tooltip.
+            if is_others:
+                html_object["author"] = one_result["author"]
 
             owner_repo = "%s/%s" % (one_result["owner"], one_result["repo"])
             commit_url = None
@@ -945,56 +989,31 @@ if result and len(result) > 0:
                 html_object["commit_url"] = commit_url
 
 
-            if not the_author in authors_hidden and (not top_contributors or the_author in top_contributors):
-                # Add empty cells to add in the right column.
-                for x in range(0, authors_pos[the_author] - 1):
-                    for y in range(0, nb_fields_per_author):
-                        row.append("")
+            # Add empty cells to add in the right column.
+            for x in range(0, authors_pos[the_author] - 1):
+                for y in range(0, nb_fields_per_author):
+                    row.append("")
 
-                if args.output_commits:
-                    row.append(one_result["total_stats_author"]["nb_commits"])
-                    h = copy.deepcopy(html_object)
-                    h["y"] = one_result["total_stats_author"]["nb_commits"]
-                    # The 'plus_minus' values allow to display the impact of a single
-                    # commit in the tooltip (the 'y' value is the sum over time, which
-                    # is what the graph shows).
-                    h["plus_minus"] = 1
-                    html_data["%s (commits)" % the_author]["data"].append(h)
-                if args.output_additions:
-                    row.append(one_result["total_stats_author"]["additions"])
-                    h = copy.deepcopy(html_object)
-                    h["y"] = one_result["total_stats_author"]["additions"]
-                    h["plus_minus"] = one_result["stats"]["additions"]
-                    html_data["%s (additions)" % the_author]["data"].append(h)
-                if args.output_deletions:
-                    row.append(one_result["total_stats_author"]["deletions"])
-                    h = copy.deepcopy(html_object)
-                    h["y"] = one_result["total_stats_author"]["deletions"]
-                    h["plus_minus"] = one_result["stats"]["deletions"]
-                    html_data["%s (deletions)" % the_author]["data"].append(h)
-                if args.output_differences:
-                    row.append(one_result["total_stats_author"]["difference"])
-                    h = copy.deepcopy(html_object)
-                    h["y"] = one_result["total_stats_author"]["difference"]
-                    h["plus_minus"] = one_result["stats"]["difference"]
-                    html_data["%s (difference)" % the_author]["data"].append(h)
-                if args.output_totals:
-                    row.append(one_result["total_stats_author"]["total"])
-                    h = copy.deepcopy(html_object)
-                    h["y"] = one_result["total_stats_author"]["total"]
-                    h["plus_minus"] = one_result["stats"]["total"]
-                    html_data["%s (total)" % the_author]["data"].append(h)
+            if args.output_commits:
+                row.append(one_result["total_stats_author"]["nb_commits"])
+                html_data = populate_html_data(html_data, html_object, "nb_commits", the_author, one_result["total_stats_author"]["nb_commits"], 1)
+            if args.output_additions:
+                row.append(one_result["total_stats_author"]["additions"])
+                html_data = populate_html_data(html_data, html_object, "additions", the_author, one_result["total_stats_author"]["additions"], one_result["stats"]["additions"])
+            if args.output_deletions:
+                row.append(one_result["total_stats_author"]["deletions"])
+                html_data = populate_html_data(html_data, html_object, "deletions", the_author, one_result["total_stats_author"]["deletions"], one_result["stats"]["deletions"])
+            if args.output_differences:
+                row.append(one_result["total_stats_author"]["difference"])
+                html_data = populate_html_data(html_data, html_object, "difference", the_author, one_result["total_stats_author"]["difference"], one_result["stats"]["difference"])
+            if args.output_totals:
+                row.append(one_result["total_stats_author"]["total"])
+                html_data = populate_html_data(html_data, html_object, "total", the_author, one_result["total_stats_author"]["total"], one_result["stats"]["total"])
 
-                for x in range(authors_pos[the_author], len(authors_pos)):
-                    for y in range(0, nb_fields_per_author):
-                        row.append("")
-
-            # We do not want to show users, still need to show totals, so fill
-            # in all other users with empty stats.
-            else:
-                for x in range(0, len(authors_pos)):
-                    for y in range(0, nb_fields_per_author):
-                        row.append("")
+            # len() -1 because oF TOTAL user that we must not take into account.
+            for x in range(authors_pos[the_author], len(authors_pos)-1):
+                for y in range(0, nb_fields_per_author):
+                    row.append("")
 
             # Add fictive 'TOTAL' user to see general trend.
             total_nb_commits = total_nb_commits + 1
@@ -1003,41 +1022,26 @@ if result and len(result) > 0:
             total_difference = total_difference + one_result["stats"]["difference"]
             total_total = total_total + one_result["stats"]["total"]
 
-            # This will only add the 'autor' to TOTAL since we create deep
+            # This will only add the 'author' to TOTAL since we create deep
             # copies of html_object. It would be redundent to show it for
             # every user at it is already displayed in the tooltip.
             html_object["author"] = the_author;
 
             if args.output_commits:
                 row.append(total_nb_commits)
-                h = copy.deepcopy(html_object)
-                h["y"] = total_nb_commits
-                h["plus_minus"] = 1
-                html_data["%s (commits)" % "TOTAL"]["data"].append(h)
+                html_data = populate_html_data(html_data, html_object, "nb_commits", m_total_username, total_nb_commits, 1)
             if args.output_additions:
                 row.append(total_additions)
-                h = copy.deepcopy(html_object)
-                h["y"] = total_additions
-                h["plus_minus"] = one_result["stats"]["additions"]
-                html_data["%s (additions)" % "TOTAL"]["data"].append(h)
+                html_data = populate_html_data(html_data, html_object, "additions", m_total_username, total_additions, one_result["stats"]["additions"])
             if args.output_deletions:
                 row.append(total_deletions)
-                h = copy.deepcopy(html_object)
-                h["y"] = total_deletions
-                h["plus_minus"] = one_result["stats"]["deletions"]
-                html_data["%s (deletions)" % "TOTAL"]["data"].append(h)
+                html_data = populate_html_data(html_data, html_object, "deletions", m_total_username, total_deletions, one_result["stats"]["deletions"])
             if args.output_differences:
                 row.append(total_difference)
-                h = copy.deepcopy(html_object)
-                h["y"] = total_difference
-                h["plus_minus"] = one_result["stats"]["difference"]
-                html_data["%s (difference)" % "TOTAL"]["data"].append(h)
+                html_data = populate_html_data(html_data, html_object, "difference", m_total_username, total_difference, one_result["stats"]["difference"])
             if args.output_totals:
                 row.append(total_total)
-                h = copy.deepcopy(html_object)
-                h["y"] = total_total
-                h["plus_minus"] = one_result["stats"]["total"]
-                html_data["%s (total)" % "TOTAL"]["data"].append(h)
+                html_data = populate_html_data(html_data, html_object, "total", m_total_username, total_total, one_result["stats"]["total"])
 
             # Show the repo this commit is comming from.
             row.append(owner_repo)
@@ -1055,7 +1059,10 @@ if result and len(result) > 0:
         # Create the jinja2 environment.
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('chart.html')
-        html_data_values = list(html_data.values())
+        html_data_values = {}
+        for chart_type in html_data.keys():
+            html_data_values
+            list(html_data.values())
 
         # This max_points_divide_factor allows to get close to the max number
         # of points requested by the user, but we might have more or less, which
@@ -1064,26 +1071,21 @@ if result and len(result) > 0:
         # simply render one out of max_points_divide_factor, which is basic and might
         # not properly show peaks and valleys. But that should be fine in most cases.
         max_points_divide_factor = 1
-        if args.max_points_html:
+        if args.max_points_html and html_data.keys():
             total_nb_points = 0
-            for hdv in html_data_values:
+            temp_list = list(html_data.values())[0]["authors"]
+            for hdv in temp_list.values():
                 if "data" in hdv:
                     total_nb_points = total_nb_points + len(hdv["data"])
             if total_nb_points > args.max_points_html:
                 max_points_divide_factor = int(total_nb_points / args.max_points_html)
 
-        # Sort so that users appear in alphabetical order in the HTML.
-        total_values = html_data_values[-nb_fields_per_author:]
-        total_values = sorted(total_values, key=lambda k: k['label'].lower(), reverse=False)
-        html_data_values = html_data_values[:-nb_fields_per_author]
-        html_data_values = sorted(html_data_values, key=lambda k: k['label'].lower(), reverse=False)
-        # We want TOTAL to appear last.
-        html_data_values.extend(total_values)
+        #print (json.dumps(html_data, indent=4, sort_keys=True))
 
-        output_from_parsed_template = template.render(labels_and_data=html_data_values,
+        output_from_parsed_template = template.render(labels_and_data=html_data,
                                                       generation_date=m_now.strftime(m_csv_date_format),
                                                       repositories=sorted(repos_html, key=str.lower),
-                                                      authors_hidden=sorted(authors_hidden.keys(), key=str.lower),
+                                                      authors_hidden=sorted(authors_hidden, key=str.lower),
                                                       max_points_divide_factor=max_points_divide_factor,
                                                       title=get_html_title(args.file[0]))
 
@@ -1094,9 +1096,9 @@ if result and len(result) > 0:
 
         print("Output file generated: %s" % html_output_filename)
 
-        print("    Total nb authors: %d" % (len(authors_hidden.keys()) + len(authors_pos.keys())))
-        if len(authors_hidden.keys()) > 0:
-            print("    Stats for the following authors are not included:\n        %s" % "\n        ".join(sorted(authors_hidden.keys(), key=str.lower)))
+        print("    Total nb authors: %d" % (len(authors_hidden) + len(authors_pos.keys())))
+        if len(authors_hidden) > 0:
+            print("    OTHERS include the following authors:\n        %s" % "\n        ".join(sorted(authors_hidden, key=str.lower)))
 
 print ('\nDone.')
 # Everything went fine.
