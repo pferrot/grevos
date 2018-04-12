@@ -120,6 +120,7 @@ def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, co
     """
     if r and len(r.keys()) > 0:
         print("Removing commits to ignore")
+        to_remove_authors = []
         for k in r.keys():
             author_data = r[k]
             to_remove_indexes = []
@@ -135,6 +136,12 @@ def remove_commits_to_ignore(r, min_commit_difference, max_commit_difference, co
                     to_remove_indexes.append(idx)
             for idx in reversed(to_remove_indexes):
                 del author_data[idx]
+            # If an author does not have any commit left, he must be removed.
+            if len(r[k]) == 0:
+                to_remove_authors.append(k)
+        for author in to_remove_authors:
+            if author in r:
+                r.pop(author)
     return r
 
 def populate_totals(the_list):
@@ -587,10 +594,10 @@ def process_unknown(r):
     For every entry whose author is currently '<unknown>':
     - If email to author or name to author files have been specified, then we try to
       set the author to the mapping specified in that file (email takes precendence).
-    - If no mapping could be found and unknown authors are not allowed, then
-      report an error and stops processing.
-    - If no mapping could be found and unknown authors are allowed, then report
-      a warning and continue processing.
+    - If no mapping could be found and name is available, then use name.
+    - If no mapping could be found and name is not available, then use email.
+    - If no mapping could be found and name is not available and email is not
+      available, then keep it as '<unknown>'.
     """
     # Tries to find the actual user thanks to email/name mapping files.
     # Also reports an issue if unknown is not allowed and no mapping is found.
@@ -599,7 +606,7 @@ def process_unknown(r):
         unknown_data = r[m_unknown_username]
         new_unknown_data = []
         for x in unknown_data:
-            author_login = None
+            author = None
             author_email = None
             author_name = None
             if "author_email" in x and x["author_email"]:
@@ -607,25 +614,25 @@ def process_unknown(r):
             if "author_name" in x and x["author_name"]:
                 author_name = x["author_name"]
             if author_email and author_email.lower() in m_email_to_author and m_email_to_author[author_email.lower()]:
-                author_login = m_email_to_author[author_email.lower()]
-                print("    Found author thanks to email to author file: %s --> %s" % (author_email, author_login))
-            elif not author_login and author_name.lower() in m_name_to_author and m_name_to_author[author_name.lower()]:
-                author_login = m_name_to_author[author_name.lower()]
-                print("    Found author thanks to name to author file: %s --> %s" % (author_name, author_login))
+                author = m_email_to_author[author_email.lower()]
+                print("    Found author thanks to email to author file: %s --> %s" % (author_email, author))
+            elif not author and author_name and author_name.lower() in m_name_to_author and m_name_to_author[author_name.lower()]:
+                author = m_name_to_author[author_name.lower()]
+                print("    Found author thanks to name to author file: %s --> %s" % (author_name, author))
+            elif not author and author_name:
+                author = author_name
+                print("    No mapping found, using name: %s" % (author_name))
+            elif not author and author_email:
+                author = author_email
+                print("    No mapping found, using email: %s" % (author_email))
             else:
-                print("    Author could not be found (email: %s, name: %s)" % (author_email if author_email else "N/A", author_name if author_name else "N/A"))
-                if args.allow_unkwnown_author:
-                    print("        Continuing as user '%s' is allowed" % m_unknown_username)
-                    new_unknown_data.append(x)
-                else:
-                    print("        Stopping as user '%s' is not allowed" % m_unknown_username)
-                    exit(1)
-
-            if author_login:
-                x["author"] = author_login
-                if not author_login in r:
-                    r[author_login] = []
-                r[author_login].append(x)
+                new_unknown_data.append(x)
+                print("    Author could not be found and no name or email available, keeping it as '%s'" % m_unknown_username)
+            if author:
+                x["author"] = author
+                if not author in r:
+                    r[author] = []
+                r[author].append(x)
 
         if len(new_unknown_data) > 0:
             r[m_unknown_username] = new_unknown_data
@@ -718,7 +725,6 @@ parser.add_argument('-ot', '--output_totals', type=str2bool, nargs='?', default=
 parser.add_argument('-d', '--csv_date_format', type=str, nargs='?', help='Date format in the generated CSV, default: \'%s\'.' % m_csv_date_format.replace('%', '%%'))
 parser.add_argument('-eaf', '--email_to_author_file', type=str, nargs='?', help='File providing the mapping between email and username, useful when the username is not available in the Git commit but the email is. File format: one entry per line, first item is the email, second item is the username, separated by a comma.')
 parser.add_argument('-naf', '--name_to_author_file', type=str, nargs='?', help='File providing the mapping between name and username, useful when the username is not available in the Git commit but the name is. File format: one entry per line, first item is the name, second item is the username, separated by a comma.')
-parser.add_argument('-au', '--allow_unkwnown_author', type=str2bool, nargs='?', default=True, help='Assigns commits whose author login cannot be retrieved to user \'%s\' if enabled, makes an error and stops processing otherwise, default: yes.' % m_unknown_username)
 parser.add_argument('-macd', '--max_commit_difference', type=int, nargs='?', help='Max difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were copied into the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-micd', '--min_commit_difference', type=int, nargs='?', help='Min difference of a commit (i.e. additions - deletions) for it to be considered, default: no limit. This is useful to exclude commits that do not make sense to take into account because many files were removed from the repository (e.g. JavaScript files in node.js projects).')
 parser.add_argument('-tc', '--top_contributors', type=int, nargs='?', help='Only keep the n top contributors based on the number of (additions - deletions), default: keep all.')
