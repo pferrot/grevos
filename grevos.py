@@ -990,13 +990,15 @@ if result and len(result) > 0:
             if is_others:
                 html_object["author"] = one_result["author"]
 
-            owner_repo = "%s/%s (%s)" % (one_result["owner"], one_result["repo"], one_result["branch"])
+            owner_repo = "%s/%s" % (one_result["owner"], one_result["repo"])
             commit_url = None
             if owner_repo in commits_url_patterns:
                 commit_url = commits_url_patterns[owner_repo].replace("{{owner}}", one_result["owner"]).replace("{{repository}}", one_result["repo"]).replace("{{commit_sha}}", one_result["sha"])
                 # This allows to have a HREF link pointing to the actual GitHub commit page when clicking
                 # on the data point in the generated graph.
                 html_object["commit_url"] = commit_url
+            # Show branch in output.
+            owner_repo = "%s (%s)" % (owner_repo, one_result["branch"])
 
 
             # Add empty cells to add in the right column.
