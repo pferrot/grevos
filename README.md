@@ -32,14 +32,17 @@ GitHub activity graphs are nice, but large projects are often composed of more t
 * Works with GitHub Enterprise.
 
 ## Prerequisites
-* Python 3 (tested with 3.6.5)
-* Following libraries must be available (install with pip3 for example):
-  * requests
-  * jinja2
+
+Recommended: create a virtual env and install necessary dependencies:
+```
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Usage
 ```
-Patrices-MacBook-Air:grevos patrice$ python3 grevos.py -h
+(venv) patrice@PatriceMacBookAir2020 grevos % python3 grevos.py -h
 GREVOS
 ------
 
